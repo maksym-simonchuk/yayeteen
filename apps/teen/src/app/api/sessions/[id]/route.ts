@@ -10,6 +10,7 @@ import { hasSessionCookie, verifySessionCookie } from '@/lib/session-token';
 import { clientIp } from '@/lib/rate-limit';
 import { deleteSession } from '@/server/commands/deleteSession';
 import { MemoryLimiterAdapter } from '@/server/adapters/memoryLimiter';
+import { jsonError } from '@/lib/api-response';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -17,24 +18,15 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
   const { id: sessionId } = await params;
 
   if (!sessionId || !UUID_RE.test(sessionId)) {
-    return new Response(JSON.stringify({ error: 'missing session id' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return jsonError('missing session id', 400);
   }
 
   // S5 401/403 семантика: немає cookie → 401; cookie є але не ця сесія → 403.
   if (!hasSessionCookie(req)) {
-    return new Response(JSON.stringify({ error: 'unauthorized' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return jsonError('unauthorized', 401);
   }
   if (!verifySessionCookie(req, sessionId)) {
-    return new Response(JSON.stringify({ error: 'forbidden' }), {
-      status: 403,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return jsonError('forbidden', 403);
   }
 
   const supabase = isSupabaseConfigured() ? createClient() : null;
@@ -44,10 +36,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
   const result = await deleteSession({ sessionId, ip }, { supabase, limiter });
 
   if (result.kind === 'error') {
-    return new Response(JSON.stringify({ error: result.error }), {
-      status: result.status,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return jsonError(result.error, result.status);
   }
 
   // 204 No Content — стандарт для успішного DELETE.
