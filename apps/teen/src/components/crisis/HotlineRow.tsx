@@ -1,6 +1,7 @@
 import { Phone, MessageSquare } from 'lucide-react';
 import type { Hotline } from '@ya-ye/method';
 import { cn } from '@ya-ye/ui';
+import { hotlineHref } from '@/lib/hotlineHref';
 
 interface HotlineRowProps {
   hotline: Hotline;
@@ -11,7 +12,7 @@ export function HotlineRow({ hotline }: HotlineRowProps) {
 
   return (
     <a
-      href={`tel:${hotline.number.replace(/\s/g, '')}`}
+      href={hotlineHref(hotline)}
       className="flex items-center gap-4 rounded-2xl border border-divider bg-bgSoft px-4 py-3.5 transition-colors hover:border-crisis/30 hover:bg-crisisSoft/30 active:opacity-80"
     >
       <div className={cn('rounded-xl p-2', isChat ? 'bg-accent/10' : 'bg-crisisSoft')}>
