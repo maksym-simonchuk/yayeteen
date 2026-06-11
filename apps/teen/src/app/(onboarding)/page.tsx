@@ -7,6 +7,7 @@ import { ChevronRight } from 'lucide-react';
 import { cn } from '@ya-ye/ui';
 import type { AgeBand } from '@ya-ye/contracts';
 import { AGE_BANDS } from '@/model/constants';
+import { createSession } from '@/lib/sessions';
 
 type Step = 'splash' | 'age' | 'name';
 
@@ -48,14 +49,8 @@ export default function OnboardingPage() {
     // Сесія працює лише з httpOnly-cookie від POST /api/sessions (P0-5):
     // локальний UUID без cookie гарантує 401 на /api/chat, тому фолбеку немає.
     try {
-      const r = await fetch('/api/sessions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ age_band: selected, user_name: userName }),
-      });
-      const data = (await r.json()) as { sessionId?: string };
-      if (!r.ok || !data.sessionId) throw new Error(`sessions failed: ${r.status}`);
-      router.push(`/${data.sessionId}`);
+      const { sessionId } = await createSession({ age_band: selected!, user_name: userName });
+      router.push(`/${sessionId}`);
     } catch (err) {
       console.error('[onboarding] /api/sessions failed', err);
       setStartError(true);
