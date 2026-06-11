@@ -351,11 +351,10 @@ export function Island({
         >
           {activeLayer && (
             <div
+              className="border border-divider bg-bgSoft"
               style={{
                 marginTop: '12px',
                 borderRadius: '16px',
-                border: '1px solid #D9D0BD',
-                background: '#EDE5D6',
                 padding: '12px 16px',
                 display: 'flex',
                 gap: '12px',
@@ -364,12 +363,12 @@ export function Island({
             >
               {/* FM номер */}
               <span
+                className="text-accent"
                 style={{
                   fontFamily: 'JetBrains Mono, monospace',
                   fontSize: '10px',
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
-                  color: '#C28160',
                   paddingTop: '2px',
                   whiteSpace: 'nowrap',
                 }}
@@ -379,11 +378,11 @@ export function Island({
               <div>
                 {/* Назва шару */}
                 <p
+                  className="text-ink"
                   style={{
                     fontFamily: 'Cormorant Garamond, serif',
                     fontStyle: 'italic',
                     fontSize: '16px',
-                    color: '#1F1B16',
                     margin: 0,
                     lineHeight: 1.3,
                   }}
@@ -392,10 +391,10 @@ export function Island({
                 </p>
                 {/* Короткий текст */}
                 <p
+                  className="text-inkSoft"
                   style={{
                     fontFamily: 'Inter, sans-serif',
                     fontSize: '13px',
-                    color: '#5A5347',
                     margin: '4px 0 0',
                     lineHeight: 1.5,
                   }}
