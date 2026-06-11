@@ -12,7 +12,7 @@ import { ExerciseCard } from '@/components/chat/ExerciseCard';
 import { SessionTimer } from '@/components/chat/SessionTimer';
 import { SpecialistRedirectInline } from '@/components/chat/SpecialistRedirectInline';
 import { cn } from '@ya-ye/ui';
-import { SseEventSchema, CrisisEventSchema, type ChatRequest } from '@ya-ye/contracts';
+import { CrisisEventSchema, type ChatRequest } from '@ya-ye/contracts';
 import {
   parseModeLabel,
   stripModeLabel,
@@ -25,6 +25,7 @@ import { getHotlines } from '@ya-ye/method';
 import type { ChatMessage } from '@/model/types';
 import { parseDbMessages } from '@/lib/parseDbMessages';
 import { greetingFor } from '@/lib/greeting';
+import { parseSseStream } from '@/lib/chatStream';
 
 // ---------------------------------------------------------------------------
 // Main chat screen
@@ -256,48 +257,21 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
         return;
       }
 
-      // SSE streaming
+      // SSE streaming — транспорт винесено у lib/chatStream.ts
       const reader = response.body!.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const events = buffer.split('\n\n');
-        buffer = events.pop() ?? '';
-        for (const event of events) {
-          if (!event.startsWith('data: ')) continue;
-          // SseEventSchema.safeParse замість голого JSON.parse:
-          // обрив стріму або невалідний chunk → пропускаємо без краша UI
-          // (quality-gate §2.4, S3: «обрив стріму → UI не зависає»).
-          let parsed;
-          try {
-            parsed = SseEventSchema.safeParse(JSON.parse(event.slice(6)));
-          } catch {
-            // Невалідний JSON — пропускаємо chunk
-            continue;
-          }
-          if (!parsed.success) {
-            // Невідомий або некоректний SSE-event — пропускаємо без краша
-            continue;
-          }
-          const data = parsed.data;
-          if (data.type === 'token') {
-            appendToStream(assistantId, data.text);
-          } else if (data.type === 'done') {
-            finalizeStream(assistantId);
-          } else if (data.type === 'error') {
-            // detail приходить лише в dev (S5) — без нього помилка німа в DevTools
-            console.error('[chat-sse-error]', data.detail ?? '(no detail — production)');
-            setMessages((prev) =>
-              prev.map((m) =>
-                m.id === assistantId ? { ...m, bubbles: [ERROR_BUBBLE], isStreaming: false } : m,
-              ),
-            );
-          }
-          // type === 'crisis' обробляється через JSON Content-Type вище, не SSE
+      for await (const data of parseSseStream(reader)) {
+        if (data.type === 'token') {
+          appendToStream(assistantId, data.text);
+        } else if (data.type === 'done') {
+          finalizeStream(assistantId);
+        } else if (data.type === 'error') {
+          // detail приходить лише в dev (S5) — без нього помилка німа в DevTools
+          console.error('[chat-sse-error]', data.detail ?? '(no detail — production)');
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantId ? { ...m, bubbles: [ERROR_BUBBLE], isStreaming: false } : m,
+            ),
+          );
         }
       }
       // Stream ended — ensure the bubble is finalized even if 'done' event was missed
