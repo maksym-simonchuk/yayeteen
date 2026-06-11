@@ -177,12 +177,18 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
         if (cancelled) return;
         const dbMessages = data.messages ?? [];
         if (dbMessages.length > 0) {
-          setMessages(
-            dbMessages.map((m, i) => ({
-              id: `db-${i}`,
-              role: m.role,
-              bubbles: m.content.split('\n\n').filter((b) => b.trim().length > 0),
-            })),
+          // Гонка з першим send: fetch стартує при mount, але може зарезолвитись
+          // вже ПІСЛЯ того як юзер відправив повідомлення — тоді перезапис стейту
+          // зʼїдає локальні баблі (включно зі стрім-плейсхолдером). Гідратуємо
+          // тільки поки локально немає власних повідомлень (greeting не рахується).
+          setMessages((prev) =>
+            prev.some((m) => m.id !== 'greeting')
+              ? prev
+              : dbMessages.map((m, i) => ({
+                  id: `db-${i}`,
+                  role: m.role,
+                  bubbles: m.content.split('\n\n').filter((b) => b.trim().length > 0),
+                })),
           );
         }
       })
@@ -358,6 +364,13 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
           setCrisisOpen(true);
           setPostCrisisMode(true);
           setIsLoading(false);
+          return;
+        }
+        // 401/403 — cookie сесії відсутня/прострочена або чужа (P0-5).
+        // 404 — сесії немає в БД (старий URL після очищення/зміни бази).
+        // Відновити їх клієнт не може — повертаємо на онбординг за новою сесією.
+        if (response.status === 401 || response.status === 403 || response.status === 404) {
+          router.push('/');
           return;
         }
         // Non-crisis JSON (error response) — show fallback and stop

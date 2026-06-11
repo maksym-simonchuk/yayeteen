@@ -21,6 +21,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState<Step>('splash');
   const [nameInput, setNameInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [startError, setStartError] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   // Фокус на інпут імені при появі кроку
@@ -42,13 +43,15 @@ export default function OnboardingPage() {
   async function startSession(userName: string | null) {
     if (submitting) return;
     setSubmitting(true);
+    setStartError(false);
 
     // Зберігаємо дані для контексту чату
     sessionStorage.setItem('age_band', selected!);
     if (userName) sessionStorage.setItem('user_name', userName);
     else sessionStorage.removeItem('user_name');
 
-    let sessionId: string;
+    // Сесія працює лише з httpOnly-cookie від POST /api/sessions (P0-5):
+    // локальний UUID без cookie гарантує 401 на /api/chat, тому фолбеку немає.
     try {
       const r = await fetch('/api/sessions', {
         method: 'POST',
@@ -56,13 +59,13 @@ export default function OnboardingPage() {
         body: JSON.stringify({ age_band: selected, user_name: userName }),
       });
       const data = (await r.json()) as { sessionId?: string };
-      sessionId = data.sessionId ?? crypto.randomUUID();
+      if (!r.ok || !data.sessionId) throw new Error(`sessions failed: ${r.status}`);
+      router.push(`/${data.sessionId}`);
     } catch (err) {
-      console.error('[onboarding] /api/sessions failed, using local UUID', err);
-      sessionId = crypto.randomUUID();
+      console.error('[onboarding] /api/sessions failed', err);
+      setStartError(true);
+      setSubmitting(false);
     }
-
-    router.push(`/${sessionId}`);
   }
 
   function handleNameSubmit() {
