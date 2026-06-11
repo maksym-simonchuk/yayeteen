@@ -75,7 +75,7 @@ export default function OnboardingPage() {
           <div className="space-y-2">
             <h2 className="font-serif text-3xl italic text-ink">як до тебе звертатись?</h2>
             <p className="font-sans text-sm leading-relaxed text-inkSoft">
-              ім'я, нікнейм, псевдонім — або нічого.
+              ім&apos;я, нікнейм, псевдонім — або нічого.
               <br />
               ти вирішуєш.
             </p>
@@ -113,7 +113,7 @@ export default function OnboardingPage() {
               'flex w-full items-center justify-center gap-2 rounded-2xl py-4',
               'font-sans text-base font-medium transition-all',
               nameInput.trim() && !submitting
-                ? 'bg-accent text-white active:opacity-80'
+                ? 'bg-accent text-ink active:opacity-80'
                 : 'bg-divider text-inkSoft',
             )}
           >
@@ -214,7 +214,7 @@ export default function OnboardingPage() {
           disabled={!selected}
           className={cn(
             'flex w-full items-center justify-center gap-2 rounded-2xl py-4 font-sans text-base font-medium transition-all',
-            selected ? 'bg-accent text-white active:opacity-80' : 'bg-divider text-inkSoft',
+            selected ? 'bg-accent text-ink active:opacity-80' : 'bg-divider text-inkSoft',
           )}
         >
           далі
