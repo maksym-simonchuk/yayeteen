@@ -24,6 +24,7 @@ import { EXERCISE_PREFIXES } from '@/lib/exercisePrefixes';
 import { getHotlines } from '@ya-ye/method';
 import type { ChatMessage } from '@/model/types';
 import { parseDbMessages } from '@/lib/parseDbMessages';
+import { greetingFor } from '@/lib/greeting';
 
 // ---------------------------------------------------------------------------
 // Main chat screen
@@ -109,17 +110,15 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
   // EU AI Act Art. 50 disclosure вже є на splash-екрані та у header чату постійно.
   useEffect(() => {
     if (hydrated && messages.length === 0) {
-      const name = sessionStorage.getItem('user_name');
-      const greeting = name ? `розкажи, як ти зараз, ${name}?` : 'розкажи, як ти зараз?';
       setMessages([
         {
           id: 'greeting',
           role: 'assistant',
-          bubbles: [greeting],
+          bubbles: [greetingFor(userName)],
         },
       ]);
     }
-  }, [hydrated, messages.length]);
+  }, [hydrated, messages.length, userName]);
 
   const handleExpire = useCallback(() => {
     setExpired(true);
