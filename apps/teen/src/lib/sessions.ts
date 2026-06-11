@@ -16,6 +16,7 @@ export async function createSession(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
+  if (!res.ok) throw new Error(`POST /api/sessions ${res.status}`);
   const data = SessionsCreateResponseSchema.parse(await res.json());
   return data;
 }
