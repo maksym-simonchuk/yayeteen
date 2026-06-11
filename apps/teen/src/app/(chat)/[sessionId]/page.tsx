@@ -252,6 +252,7 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
           appendToStream(assistantId, data.text);
         } else if (data.type === 'done') {
           finalizeStream(assistantId);
+          break;
         } else if (data.type === 'error') {
           // detail приходить лише в dev (S5) — без нього помилка німа в DevTools
           console.error('[chat-sse-error]', data.detail ?? '(no detail — production)');
