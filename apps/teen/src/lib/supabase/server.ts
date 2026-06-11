@@ -1,4 +1,5 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { stripBom } from '@/lib/env';
 
 const PLACEHOLDER_HOSTS = ['your-project.supabase.co'];
 const PLACEHOLDER_KEYS = ['your-service-role-key', 'your-anon-key'];
@@ -16,12 +17,6 @@ export function isSupabaseConfigured(): boolean {
   if (PLACEHOLDER_HOSTS.some((h) => url.includes(h))) return false;
   if (PLACEHOLDER_KEYS.includes(key)) return false;
   return true;
-}
-
-const BOM_RE = /^﻿/;
-
-function stripBom(s: string): string {
-  return s.replace(BOM_RE, '').trim();
 }
 
 export function createClient() {

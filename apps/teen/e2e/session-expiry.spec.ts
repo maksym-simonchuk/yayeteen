@@ -43,8 +43,7 @@ test.describe('Таймер сесії', () => {
     await page.waitForURL(`/${SESSION_ID}/exit`, { timeout: 10000 });
 
     // Exit-екран рендериться
-    await expect(page.getByText('сесія')).toBeVisible();
-    await expect(page.getByText('завершена')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /сесія завершена/i })).toBeVisible();
   });
 
   test('таймер не стріляє після unmount (відсутність setTimeout-leak)', async ({ page }) => {

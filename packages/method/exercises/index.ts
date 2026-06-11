@@ -1,4 +1,4 @@
-import whitelist from '../../../docs/exercises-whitelist.json';
+import whitelist from './exercises-whitelist.json';
 
 export type ExerciseId =
   | 'breathing-4-6'
@@ -35,8 +35,8 @@ export function suggestExerciseForMode(
 ): Exercise | null {
   const candidates = whitelist.exercises.filter(
     (e) =>
-      e.trigger_modes.includes(mode as never) &&
-      (fm === undefined || e.trigger_fm.includes(fm as never)),
+      (e.trigger_modes as Array<1 | 2 | 3 | 4 | 'crisis'>).includes(mode) &&
+      (fm === undefined || (e.trigger_fm as Array<1 | 2 | 3 | 4>).includes(fm)),
   );
   return (candidates[0] as Exercise) ?? null;
 }

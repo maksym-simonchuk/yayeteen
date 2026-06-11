@@ -8,13 +8,15 @@ import { z } from 'zod';
 // Спільні примітиви
 // ---------------------------------------------------------------------------
 
-const AgeBandSchema = z.enum(['13-15', '16-17', '18-25']);
+export const AgeBandSchema = z.enum(['13-15', '16-17', '18-25']);
+export type AgeBand = z.infer<typeof AgeBandSchema>;
 
-const ChatTurnSchema = z.object({
+export const ChatTurnSchema = z.object({
   role: z.enum(['user', 'assistant']),
   // Ліміт 2000 символів — узгоджено з MAX_MESSAGE_CHARS у route.ts
   content: z.string().max(2000),
 });
+export type ChatTurn = z.infer<typeof ChatTurnSchema>;
 
 // ---------------------------------------------------------------------------
 // ChatRequestSchema — клієнт → POST /api/chat
@@ -103,8 +105,6 @@ const SseTokenEventSchema = z.object({
 
 const SseDoneEventSchema = z.object({
   type: z.literal('done'),
-  // mode — зарезервовано для майбутніх фаз (phase-2 mode-classifier)
-  mode: z.string().optional(),
 });
 
 const SseErrorEventSchema = z.object({
@@ -128,6 +128,10 @@ const SseCrisisEventSchema = z.object({
 // ---------------------------------------------------------------------------
 
 const ContactChannelSchema = z.enum(['telegram', 'email']);
+export type ContactChannel = z.infer<typeof ContactChannelSchema>;
+
+const BookingAgeBandSchema = z.enum(['13-15', '16-17', '18-25', '25+']);
+export type BookingAgeBand = z.infer<typeof BookingAgeBandSchema>;
 
 export const BookingSubmitSchema = z
   .object({
@@ -136,7 +140,7 @@ export const BookingSubmitSchema = z
     user_name: z.string().min(2).max(64),
     contact_preferred: ContactChannelSchema,
     contact_value: z.string().min(3).max(256),
-    user_age_band: z.enum(['13-15', '16-17', '18-25', '25+']),
+    user_age_band: BookingAgeBandSchema,
     topic: z.string().max(300).nullable().optional(),
     ai_excerpt: z.string().max(1000).nullable().optional(),
     consent_offer: z.literal(true),

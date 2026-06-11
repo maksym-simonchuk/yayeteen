@@ -1,4 +1,4 @@
-import type { Message, ModeDetection } from './types';
+import type { ModeDetection } from './types';
 
 // Companionship drift — Mode 3 (межа) + Принцип I
 const COMPANIONSHIP_DRIFT_UA = [
@@ -69,11 +69,8 @@ export function detectModeFromKeywords(
   return null;
 }
 
-// Повна детекція з Claude classifier додається у Phase 2
-export async function detectMode(
-  _history: Message[],
-  newUserMessage: string,
-): Promise<ModeDetection> {
+// Phase 2: розширення до Claude classifier — тут лише keyword-тонка обгортка.
+export function detectMode(newUserMessage: string): ModeDetection {
   const keywordResult = detectModeFromKeywords(newUserMessage);
 
   if (keywordResult) {

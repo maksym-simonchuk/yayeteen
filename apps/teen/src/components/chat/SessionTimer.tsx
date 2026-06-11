@@ -1,59 +1,64 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@ya-ye/ui';
 
-const SESSION_DURATION_MS = 25 * 60 * 1000; // 25 хвилин
-const WARNING_THRESHOLD_MS = 60 * 1000; // попередження за 1 хвилину
+const DURATION = 25 * 60;
 
 interface SessionTimerProps {
   sessionId: string;
-  startedAt: number; // timestamp ms
-  onWarning?: () => void;
+  onExpire: () => void;
 }
 
-export function SessionTimer({ sessionId, startedAt, onWarning }: SessionTimerProps) {
+export function SessionTimer({ sessionId, onExpire }: SessionTimerProps) {
   const router = useRouter();
-  const [remaining, setRemaining] = useState(SESSION_DURATION_MS);
-  const [warned, setWarned] = useState(false);
-
-  const tick = useCallback(() => {
-    const elapsed = Date.now() - startedAt;
-    const rem = Math.max(0, SESSION_DURATION_MS - elapsed);
-    setRemaining(rem);
-
-    if (rem <= WARNING_THRESHOLD_MS && !warned) {
-      setWarned(true);
-      onWarning?.();
-    }
-
-    if (rem === 0) {
-      // Route group (chat) не додає prefix — URL є просто /${sessionId}/exit
-      router.push(`/${sessionId}/exit`);
-    }
-  }, [startedAt, warned, onWarning, router, sessionId]);
+  const [remaining, setRemaining] = useState(DURATION);
+  const expiredRef = useRef(false);
+  // Зберігаємо id таймера redirect, щоб скасувати при unmount
+  const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    tick();
-    const interval = setInterval(tick, 1000);
-    return () => clearInterval(interval);
-  }, [tick]);
+    return () => {
+      if (exitTimerRef.current !== null) {
+        clearTimeout(exitTimerRef.current);
+      }
+    };
+  }, []);
 
-  const minutes = Math.floor(remaining / 60000);
-  const seconds = Math.floor((remaining % 60000) / 1000);
-  const isWarning = remaining <= WARNING_THRESHOLD_MS;
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          if (!expiredRef.current) {
+            expiredRef.current = true;
+            onExpire();
+            // Канонічний промт 4.9: «UI зараз закриє чат». Даємо 8с прочитати
+            // closing-баббли, потім ведемо на graduation-екран /exit.
+            exitTimerRef.current = setTimeout(() => {
+              router.push(`/${sessionId}/exit`);
+            }, 8000);
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [onExpire, router, sessionId]);
+
+  const mm = String(Math.floor(remaining / 60)).padStart(2, '0');
+  const ss = String(remaining % 60).padStart(2, '0');
+  const isLow = remaining <= 60;
 
   return (
     <span
-      className={cn(
-        'font-mono text-xs tabular-nums transition-colors',
-        isWarning ? 'text-crisis' : 'text-inkSoft',
-      )}
-      aria-label={`залишилось ${minutes} хвилин ${seconds} секунд`}
-      aria-live={isWarning ? 'assertive' : 'off'}
+      className={cn('font-mono text-[10px] tabular-nums', isLow ? 'text-crisis' : 'text-inkSoft')}
+      aria-label={`залишилось ${Math.floor(remaining / 60)} хвилин ${remaining % 60} секунд`}
+      aria-live={isLow ? 'assertive' : 'off'}
     >
-      {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+      {mm}:{ss}
     </span>
   );
 }

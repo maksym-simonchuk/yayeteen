@@ -7,13 +7,7 @@ import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
 import { getSpecialistBySlug, getSessionType } from '@/lib/specialists';
 import { rateLimit, clientIp } from '@/lib/rate-limit';
 import { submitBooking } from '@/server/commands/submitBooking';
-
-function jsonError(error: string, status: number): Response {
-  return new Response(JSON.stringify({ error }), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
-}
+import { jsonError } from '@/lib/api-response';
 
 export async function POST(req: Request) {
   // Rate limit — захист від спаму заявок.

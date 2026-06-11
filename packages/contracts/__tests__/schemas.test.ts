@@ -362,7 +362,7 @@ describe('SseEventSchema', () => {
     expect(result.success).toBe(true);
   });
 
-  it('valid — done event з mode (зарезервовано для phase-2)', () => {
+  it('valid — done event, зайві поля ігноруються zod-ом', () => {
     const result = SseEventSchema.safeParse({ type: 'done', mode: 'MODE:2' });
     expect(result.success).toBe(true);
   });

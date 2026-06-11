@@ -1,5 +1,19 @@
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { config as loadDotenv } from 'dotenv';
 import withPWA from '@ducanh2912/next-pwa';
 import createNextIntlPlugin from 'next-intl/plugin';
+
+// Монорепо: env-файли можуть лежати в корені репозиторію, Next.js сам читає
+// .env* лише з apps/teen. Підвантажуємо кореневі .env.local/.env як фолбек.
+// override:false (дефолт) — вже виставлені змінні (shell, Vercel, apps/teen/.env*,
+// які Next завантажив до next.config) НЕ перезаписуються.
+// Пріоритет: shell/Vercel > apps/teen/.env* > кореневий .env.local > кореневий .env.
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+loadDotenv({
+  path: [resolve(repoRoot, '.env.local'), resolve(repoRoot, '.env')],
+  quiet: true,
+});
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 

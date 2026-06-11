@@ -1,21 +1,12 @@
 import { cn } from '@ya-ye/ui';
-import type { Mode } from '@ya-ye/method';
 
 interface ChatBubbleProps {
   role: 'user' | 'assistant';
   content: string;
-  mode?: Mode;
   isStreaming?: boolean;
 }
 
-const MODE_LABELS: Record<Mode, string> = {
-  1: '01 · підтримую',
-  2: '02 · поруч',
-  3: '03 · обережно',
-  4: '04 · пауза',
-};
-
-export function ChatBubble({ role, content, mode, isStreaming }: ChatBubbleProps) {
+export function ChatBubble({ role, content, isStreaming }: ChatBubbleProps) {
   const isUser = role === 'user';
 
   return (
@@ -27,13 +18,6 @@ export function ChatBubble({ role, content, mode, isStreaming }: ChatBubbleProps
           'flex flex-col',
         )}
       >
-        {/* Mode label для assistant — показується над бабблом */}
-        {!isUser && mode && (
-          <span className="px-1 font-mono text-[10px] uppercase tracking-wider text-inkSoft">
-            [{MODE_LABELS[mode]}]
-          </span>
-        )}
-
         <div
           className={cn(
             'rounded-2xl px-4 py-3',

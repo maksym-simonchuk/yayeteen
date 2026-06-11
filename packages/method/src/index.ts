@@ -9,6 +9,6 @@ export { validateAsymmetry } from '../principles/asymmetry';
 export { detectMode, detectModeFromKeywords } from './mode-detector';
 export { getHotlines, HOTLINES } from './hotlines';
 export { SCENARIOS, fm1NoSpace, fm1Freeze, fm1SelfTrust, fm2NoJoy, fm2Loss } from './scenarios';
-export { matchScenario, matchAllScenarios, fm1Keywords, fm2Keywords } from './matchScenario';
+export { matchScenario, matchAllScenarios, keywordsByFm } from './matchScenario';
 export type { Scenario } from './scenarios';
 export type { Mode, FM, CrisisSeverity, Message, ModeDetection, Hotline } from './types';

@@ -4,6 +4,7 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import type { AnthropicPort, AnthropicStreamParams } from '@/server/ports/anthropic';
+import { stripBom } from '@/lib/env';
 
 class AnthropicSdkAdapter implements AnthropicPort {
   private readonly client: Anthropic;
@@ -32,7 +33,7 @@ class AnthropicSdkAdapter implements AnthropicPort {
 // NOTE: порожній ANTHROPIC_API_KEY у shell env перекриє .env.local —
 // Next.js ніколи не перезаписує pre-existing process.env.
 export function createAnthropicAdapter(): AnthropicPort | null {
-  const apiKey = process.env.ANTHROPIC_API_KEY?.replace(/^﻿/, '').trim();
+  const apiKey = stripBom(process.env.ANTHROPIC_API_KEY ?? '');
   if (!apiKey) return null;
   return new AnthropicSdkAdapter(apiKey);
 }

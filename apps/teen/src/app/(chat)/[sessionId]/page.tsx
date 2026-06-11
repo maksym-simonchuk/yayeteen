@@ -8,134 +8,32 @@ import { Send } from 'lucide-react';
 import { CrisisModal } from '@/components/crisis/CrisisModal';
 import { Grounding54321 } from '@/components/crisis/Grounding54321';
 import { ChatBubble } from '@/components/chat/ChatBubble';
+import { ExerciseCard } from '@/components/chat/ExerciseCard';
+import { SessionTimer } from '@/components/chat/SessionTimer';
 import { SpecialistRedirectInline } from '@/components/chat/SpecialistRedirectInline';
 import { cn } from '@ya-ye/ui';
-import { getExercise, type ExerciseId } from '@ya-ye/method/exercises';
 import { SseEventSchema, type ChatRequest } from '@ya-ye/contracts';
-import { parseModeLabel, stripModeLabel, DEFAULT_MODE_LABEL } from '@/lib/parseModeLabel';
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  bubbles: string[];
-  isStreaming?: boolean;
-  hasModeRedirect?: boolean; // true якщо AI емітив [MODE:4] — UI рендерить SpecialistRedirectInline під реплікою
-  postCrisisExercise?: boolean; // true для пост-кризового повідомлення з пропозицією вправи
-}
-
-// Регекс для парсингу маркера. Підтримує опційний whitespace навколо
-// і повторні маркери (хоч промт забороняє — все одно стрипаємо всі).
-const MODE_REDIRECT_RE = /\s*\[MODE:4\]\s*/g;
-
-// ---------------------------------------------------------------------------
-// Exercise card — rendered inline when AI sends exercise signal
-// ---------------------------------------------------------------------------
-
-const EXERCISE_PREFIXES = ['[ВПРАВА', '[ЗАЗЕМЛЕННЯ', '[ТІЛО', '[RAIN', '[КОМПАС', '[ЯКІР'];
-
-// Маркер промта → id вправи у whitelist (docs/exercises-whitelist.json)
-const PREFIX_TO_EXERCISE: Record<string, ExerciseId> = {
-  '[ВПРАВА': 'breathing-4-6',
-  '[ЗАЗЕМЛЕННЯ': 'grounding-54321',
-  '[ТІЛО': 'body-scan-short',
-  '[RAIN': 'rain',
-  '[КОМПАС': 'values-compass',
-  '[ЯКІР': 'meaning-anchor',
-};
-
-function ExerciseCard({ text }: { text: string }) {
-  const [expanded, setExpanded] = useState(false);
-  const lines = text.slice(1, -1).split(' · ');
-  const title = lines[0] ?? text;
-  const subtitle = lines.slice(1).join(' · ');
-
-  const prefix = EXERCISE_PREFIXES.find((p) => text.startsWith(p));
-  const exerciseId = prefix ? PREFIX_TO_EXERCISE[prefix] : undefined;
-  const exercise = exerciseId ? getExercise(exerciseId) : null;
-
-  return (
-    <div className="my-1 rounded-2xl border border-divider bg-bgSoft px-4 py-3">
-      <p className="font-mono text-xs uppercase tracking-wider text-inkSoft">{title}</p>
-      {subtitle && <p className="mt-0.5 font-sans text-sm text-ink">{subtitle}</p>}
-      {exercise?.steps && expanded && (
-        <ol className="mt-3 space-y-2">
-          {exercise.steps.map((step, i) => (
-            <li key={i} className="flex gap-2 font-sans text-sm text-ink">
-              <span className="font-mono text-xs text-inkSoft">{i + 1}</span>
-              <span>{step}</span>
-            </li>
-          ))}
-        </ol>
-      )}
-      {exercise?.steps && (
-        <button
-          onClick={() => setExpanded((v) => !v)}
-          className="mt-2 font-mono text-xs text-accent transition-opacity active:opacity-80"
-        >
-          {expanded ? 'згорнути' : exercise.ui_card.cta}
-        </button>
-      )}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Session timer — 25:00 countdown
-// ---------------------------------------------------------------------------
-
-function SessionTimer({ onExpire }: { onExpire: () => void }) {
-  const DURATION = 25 * 60;
-  const [remaining, setRemaining] = useState(DURATION);
-  const expiredRef = useRef(false);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRemaining((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          if (!expiredRef.current) {
-            expiredRef.current = true;
-            onExpire();
-          }
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [onExpire]);
-
-  const mm = String(Math.floor(remaining / 60)).padStart(2, '0');
-  const ss = String(remaining % 60).padStart(2, '0');
-  const isLow = remaining <= 60;
-
-  return (
-    <span
-      className={cn('font-mono text-[10px] tabular-nums', isLow ? 'text-crisis' : 'text-inkSoft')}
-    >
-      {mm}:{ss}
-    </span>
-  );
-}
+import {
+  parseModeLabel,
+  stripModeLabel,
+  DEFAULT_MODE_LABEL,
+  MODE_REDIRECT_RE,
+} from '@/lib/parseModeLabel';
+import { EXERCISE_PREFIXES } from '@/lib/exercisePrefixes';
+import { getHotlines } from '@ya-ye/method';
+import type { ChatMessage } from '@/model/types';
 
 // ---------------------------------------------------------------------------
 // Main chat screen
 // ---------------------------------------------------------------------------
 
-const UA_HOTLINES = [
-  { name: 'дитяча лінія довіри', number: '116 111', note: 'безкоштовно · 24/7' },
-  { name: 'Teenergizer', number: '7333', note: 'чат · безкоштовно' },
-];
+const ERROR_BUBBLE = 'щось пішло не так. спробуй ще раз.';
 
 export default function ChatPage({ params }: { params: Promise<{ sessionId: string }> }) {
   const { sessionId } = use(params);
   const router = useRouter();
 
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [crisisOpen, setCrisisOpen] = useState(false);
@@ -177,12 +75,18 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
         if (cancelled) return;
         const dbMessages = data.messages ?? [];
         if (dbMessages.length > 0) {
-          setMessages(
-            dbMessages.map((m, i) => ({
-              id: `db-${i}`,
-              role: m.role,
-              bubbles: m.content.split('\n\n').filter((b) => b.trim().length > 0),
-            })),
+          // Гонка з першим send: fetch стартує при mount, але може зарезолвитись
+          // вже ПІСЛЯ того як юзер відправив повідомлення — тоді перезапис стейту
+          // зʼїдає локальні баблі (включно зі стрім-плейсхолдером). Гідратуємо
+          // тільки поки локально немає власних повідомлень (greeting не рахується).
+          setMessages((prev) =>
+            prev.some((m) => m.id !== 'greeting')
+              ? prev
+              : dbMessages.map((m, i) => ({
+                  id: `db-${i}`,
+                  role: m.role,
+                  bubbles: m.content.split('\n\n').filter((b) => b.trim().length > 0),
+                })),
           );
         }
       })
@@ -220,18 +124,6 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
     }
   }, [hydrated, messages.length]);
 
-  // Зберігаємо id таймера, щоб скасувати його при unmount (запобігає leak).
-  const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Cleanup таймера при unmount компонента
-  useEffect(() => {
-    return () => {
-      if (exitTimerRef.current !== null) {
-        clearTimeout(exitTimerRef.current);
-      }
-    };
-  }, []);
-
   const handleExpire = useCallback(() => {
     setExpired(true);
     setMessages((prev) => [
@@ -246,14 +138,7 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
         ],
       },
     ]);
-    // Канонічний промт 4.9: «UI зараз закриє чат». Даємо 8с прочитати
-    // closing-баббли, потім ведемо на graduation-екран /exit. Route group
-    // (chat) не додає prefix — URL є /${sessionId}/exit.
-    // Таймер зберігається у ref — cleanup у useEffect вище скасує його при unmount.
-    exitTimerRef.current = setTimeout(() => {
-      router.push(`/${sessionId}/exit`);
-    }, 8000);
-  }, [router, sessionId]);
+  }, []);
 
   const appendToStream = useCallback(
     (id: string, text: string) => {
@@ -360,12 +245,17 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
           setIsLoading(false);
           return;
         }
+        // 401/403 — cookie сесії відсутня/прострочена або чужа (P0-5).
+        // 404 — сесії немає в БД (старий URL після очищення/зміни бази).
+        // Відновити їх клієнт не може — повертаємо на онбординг за новою сесією.
+        if (response.status === 401 || response.status === 403 || response.status === 404) {
+          router.push('/');
+          return;
+        }
         // Non-crisis JSON (error response) — show fallback and stop
         setMessages((prev) =>
           prev.map((m) =>
-            m.id === assistantId
-              ? { ...m, bubbles: ['щось пішло не так. спробуй ще раз.'], isStreaming: false }
-              : m,
+            m.id === assistantId ? { ...m, bubbles: [ERROR_BUBBLE], isStreaming: false } : m,
           ),
         );
         setIsLoading(false);
@@ -407,9 +297,7 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
           } else if (data.type === 'error') {
             setMessages((prev) =>
               prev.map((m) =>
-                m.id === assistantId
-                  ? { ...m, bubbles: ['щось пішло не так. спробуй ще раз.'], isStreaming: false }
-                  : m,
+                m.id === assistantId ? { ...m, bubbles: [ERROR_BUBBLE], isStreaming: false } : m,
               ),
             );
           }
@@ -422,9 +310,7 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
       console.error('Chat error', err);
       setMessages((prev) =>
         prev.map((m) =>
-          m.id === assistantId
-            ? { ...m, bubbles: ['щось пішло не так. спробуй ще раз.'], isStreaming: false }
-            : m,
+          m.id === assistantId ? { ...m, bubbles: [ERROR_BUBBLE], isStreaming: false } : m,
         ),
       );
     } finally {
@@ -446,7 +332,7 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
         <span className="font-mono text-[10px] uppercase tracking-wider text-inkSoft">
           {modeLabel}
         </span>
-        <SessionTimer onExpire={handleExpire} />
+        <SessionTimer sessionId={sessionId} onExpire={handleExpire} />
       </div>
 
       {/* Messages */}
@@ -572,7 +458,7 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
       {/* Crisis modal */}
       {crisisOpen && (
         <CrisisModal
-          hotlines={UA_HOTLINES}
+          hotlines={getHotlines('UA')}
           onClose={() => {
             setCrisisOpen(false);
             // Після закриття модалу — додаємо повідомлення з пропозицією вправи

@@ -5,15 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ChevronRight } from 'lucide-react';
 import { cn } from '@ya-ye/ui';
+import type { AgeBand } from '@ya-ye/contracts';
+import { AGE_BANDS } from '@/model/constants';
 
-type AgeBand = '13-15' | '16-17' | '18-25';
 type Step = 'splash' | 'age' | 'name';
-
-const AGE_BANDS: { value: AgeBand; label: string }[] = [
-  { value: '13-15', label: '13–15' },
-  { value: '16-17', label: '16–17' },
-  { value: '18-25', label: '18–25' },
-];
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -21,6 +16,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState<Step>('splash');
   const [nameInput, setNameInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [startError, setStartError] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   // Фокус на інпут імені при появі кроку
@@ -42,13 +38,15 @@ export default function OnboardingPage() {
   async function startSession(userName: string | null) {
     if (submitting) return;
     setSubmitting(true);
+    setStartError(false);
 
     // Зберігаємо дані для контексту чату
     sessionStorage.setItem('age_band', selected!);
     if (userName) sessionStorage.setItem('user_name', userName);
     else sessionStorage.removeItem('user_name');
 
-    let sessionId: string;
+    // Сесія працює лише з httpOnly-cookie від POST /api/sessions (P0-5):
+    // локальний UUID без cookie гарантує 401 на /api/chat, тому фолбеку немає.
     try {
       const r = await fetch('/api/sessions', {
         method: 'POST',
@@ -56,13 +54,13 @@ export default function OnboardingPage() {
         body: JSON.stringify({ age_band: selected, user_name: userName }),
       });
       const data = (await r.json()) as { sessionId?: string };
-      sessionId = data.sessionId ?? crypto.randomUUID();
+      if (!r.ok || !data.sessionId) throw new Error(`sessions failed: ${r.status}`);
+      router.push(`/${data.sessionId}`);
     } catch (err) {
-      console.error('[onboarding] /api/sessions failed, using local UUID', err);
-      sessionId = crypto.randomUUID();
+      console.error('[onboarding] /api/sessions failed', err);
+      setStartError(true);
+      setSubmitting(false);
     }
-
-    router.push(`/${sessionId}`);
   }
 
   function handleNameSubmit() {
@@ -82,7 +80,7 @@ export default function OnboardingPage() {
           <div className="space-y-2">
             <h2 className="font-serif text-3xl italic text-ink">як до тебе звертатись?</h2>
             <p className="font-sans text-sm leading-relaxed text-inkSoft">
-              ім’я, нікнейм, псевдонім — або нічого.
+              ім'я, нікнейм, псевдонім — або нічого.
               <br />
               ти вирішуєш.
             </p>
@@ -134,6 +132,11 @@ export default function OnboardingPage() {
           >
             продовжити без імені
           </button>
+          {startError && (
+            <p role="alert" className="text-center font-sans text-sm text-crisis">
+              не вдалося почати. спробуй ще раз.
+            </p>
+          )}
         </div>
       </main>
     );
