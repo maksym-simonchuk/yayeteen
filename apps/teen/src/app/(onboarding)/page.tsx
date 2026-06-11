@@ -5,15 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ChevronRight } from 'lucide-react';
 import { cn } from '@ya-ye/ui';
+import type { AgeBand } from '@ya-ye/contracts';
+import { AGE_BANDS } from '@/model/constants';
 
-type AgeBand = '13-15' | '16-17' | '18-25';
 type Step = 'splash' | 'age' | 'name';
-
-const AGE_BANDS: { value: AgeBand; label: string }[] = [
-  { value: '13-15', label: '13–15' },
-  { value: '16-17', label: '16–17' },
-  { value: '18-25', label: '18–25' },
-];
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -85,7 +80,7 @@ export default function OnboardingPage() {
           <div className="space-y-2">
             <h2 className="font-serif text-3xl italic text-ink">як до тебе звертатись?</h2>
             <p className="font-sans text-sm leading-relaxed text-inkSoft">
-              ім’я, нікнейм, псевдонім — або нічого.
+              ім'я, нікнейм, псевдонім — або нічого.
               <br />
               ти вирішуєш.
             </p>
@@ -137,6 +132,11 @@ export default function OnboardingPage() {
           >
             продовжити без імені
           </button>
+          {startError && (
+            <p role="alert" className="text-center font-sans text-sm text-crisis">
+              не вдалося почати. спробуй ще раз.
+            </p>
+          )}
         </div>
       </main>
     );

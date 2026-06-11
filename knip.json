@@ -33,7 +33,7 @@
       "project": ["src/**/*.{ts,tsx}"]
     }
   },
-  "ignore": ["apps/teen/src/components/chat/SessionTimer.tsx"],
+
   "ignoreBinaries": ["lighthouse"],
   "ignoreExportsUsedInFile": true
 }

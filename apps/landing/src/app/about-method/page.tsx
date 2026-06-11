@@ -1,13 +1,10 @@
 // /about-method — пояснення Я-острова з 4 шарами = 4 ФМ.
 // Спеціфікація: Demo Day Sprint v2.1, Фаза B.
 
-import Link from 'next/link';
-import { ArrowRight, ChevronLeft } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Island, ISLAND_LAYERS } from '@ya-ye/ui';
-
-const APP_BASE =
-  process.env.NEXT_PUBLIC_TEEN_APP_URL?.replace(/^﻿/, '').trim() ||
-  'https://yayeproduct-teen.vercel.app';
+import { APP_BASE } from '../../lib/config';
+import { InnerPageHeader } from '../../components/InnerPageHeader';
 
 const LAYER_BG: Record<string, string> = {
   'island-foundation': 'bg-island-foundation/20',
@@ -19,18 +16,7 @@ const LAYER_BG: Record<string, string> = {
 export default function AboutMethodPage() {
   return (
     <main className="min-h-[100dvh] bg-bg text-ink">
-      <header className="border-b border-divider px-6 py-5">
-        <div className="mx-auto flex max-w-6xl items-center gap-3">
-          <Link
-            href="/"
-            className="rounded-xl p-1.5 text-inkSoft transition-colors hover:bg-bgSoft"
-            aria-label="На головну"
-          >
-            <ChevronLeft size={20} strokeWidth={1.5} />
-          </Link>
-          <h1 className="font-serif text-2xl italic text-ink">як ми думаємо про переживання</h1>
-        </div>
-      </header>
+      <InnerPageHeader title="як ми думаємо про переживання" />
 
       <section className="mx-auto max-w-6xl px-6 py-12 md:py-16">
         <h2 className="font-serif text-3xl italic text-ink md:text-4xl">хто або що я є?</h2>

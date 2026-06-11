@@ -2,9 +2,7 @@
 // PII: жодного console.log з контактними даними (S5 quality-gate).
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-
-export type ContactChannel = 'telegram' | 'email';
-export type BookingAgeBand = '13-15' | '16-17' | '18-25' | '25+';
+import type { ContactChannel, BookingAgeBand } from '@ya-ye/contracts';
 
 export interface SubmitBookingDeps {
   supabase: SupabaseClient | null;

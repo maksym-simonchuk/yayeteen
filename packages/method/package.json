@@ -18,6 +18,9 @@
     "test:watch": "vitest",
     "lint": "eslint ."
   },
+  "dependencies": {
+    "@ya-ye/contracts": "workspace:*"
+  },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
     "@vitest/coverage-v8": "^2.1.8",

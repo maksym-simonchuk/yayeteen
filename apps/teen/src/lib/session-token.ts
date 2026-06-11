@@ -22,7 +22,6 @@ function sign(sessionId: string, secret: string): string {
   return createHmac('sha256', secret).update(sessionId).digest('hex');
 }
 
-// Зчитуємо raw-значення cookie без верифікації (для розділення читання/перевірки).
 function readRawCookie(req: Request): string | undefined {
   return (req.headers.get('cookie') ?? '')
     .split(';')
@@ -43,16 +42,6 @@ export function buildSessionCookie(sessionId: string): string | null {
 // true = cookie є (але може бути для іншої сесії); false = cookie взагалі відсутній.
 export function hasSessionCookie(req: Request): boolean {
   return readRawCookie(req) !== undefined;
-}
-
-// readSessionCookie — зчитує sessionId з cookie БЕЗ верифікації підпису.
-// Використовується для логування/діагностики. Для auth — тільки verifySessionCookie.
-export function readSessionCookie(req: Request): string | null {
-  const raw = readRawCookie(req);
-  if (!raw) return null;
-  const dot = raw.lastIndexOf('.');
-  if (dot <= 0) return null;
-  return raw.slice(0, dot);
 }
 
 // verifySessionCookie — повна перевірка: cookie є + підпис валідний + sessionId збігається.

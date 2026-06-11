@@ -13,8 +13,6 @@ export interface SseTokenFixture {
   type: 'stream';
   /** Масив текстів токенів. Буде з'єднано у бабблах через \n\n */
   tokens: string[];
-  /** Опційний режим у done-події (для перевірки mode-лейбла) */
-  mode?: string;
 }
 
 /** Кризова відповідь — JSON з type:'crisis' */
@@ -46,9 +44,7 @@ function buildSseBody(fixture: SseTokenFixture): string {
   for (const token of fixture.tokens) {
     chunks.push(sseData({ type: 'token', text: token }));
   }
-  const donePayload: Record<string, unknown> = { type: 'done' };
-  if (fixture.mode) donePayload['mode'] = fixture.mode;
-  chunks.push(sseData(donePayload));
+  chunks.push(sseData({ type: 'done' }));
   return chunks.join('');
 }
 

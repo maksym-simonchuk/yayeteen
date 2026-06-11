@@ -1,12 +1,7 @@
 // S1 unit-тести для lib/session-token.ts — 401/403 семантика (quality-gate §S5).
 
 import { describe, it, expect } from 'vitest';
-import {
-  buildSessionCookie,
-  hasSessionCookie,
-  readSessionCookie,
-  verifySessionCookie,
-} from '../../lib/session-token';
+import { buildSessionCookie, hasSessionCookie, verifySessionCookie } from '../../lib/session-token';
 
 const SESSION_ID = '44444444-4444-4444-4444-444444444444';
 const OTHER_SESSION_ID = '55555555-5555-5555-5555-555555555555';
@@ -54,17 +49,22 @@ describe('hasSessionCookie', () => {
   });
 });
 
-describe('readSessionCookie', () => {
-  it('повертає sessionId без верифікації підпису', () => {
+describe('verifySessionCookie — ідентичність sessionId', () => {
+  it('verify повертає true для cookie виданого для тієї ж сесії', () => {
     const cookie = buildSessionCookie(SESSION_ID)!;
     const nameValue = cookie.split(';')[0]!;
     const req = makeRequestWithCookie(nameValue);
-    expect(readSessionCookie(req)).toBe(SESSION_ID);
+    // Перевірка з правильним sessionId проходить
+    expect(verifySessionCookie(req, SESSION_ID)).toBe(true);
   });
 
-  it('повертає null якщо cookie відсутній', () => {
-    const req = makeRequestWithoutCookie();
-    expect(readSessionCookie(req)).toBeNull();
+  it('verify повертає false для cookie від іншої сесії — sessionId не збігається', () => {
+    const cookie = buildSessionCookie(OTHER_SESSION_ID)!;
+    const nameValue = cookie.split(';')[0]!;
+    const req = makeRequestWithCookie(nameValue);
+    // hasSessionCookie = true, але verify проти SESSION_ID = false
+    expect(hasSessionCookie(req)).toBe(true);
+    expect(verifySessionCookie(req, SESSION_ID)).toBe(false);
   });
 });
 

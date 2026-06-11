@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Phone, MessageSquare, ChevronLeft } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { getHotlines } from '@ya-ye/method';
 import { Grounding54321 } from '@/components/crisis/Grounding54321';
-import { cn } from '@ya-ye/ui';
+import { HotlineRow } from '@/components/crisis/HotlineRow';
 
 // Geo-routing: у Phase 3 jurisdiction береться з user profile
 // Поки що UA за замовчуванням
@@ -52,31 +52,9 @@ export function CrisisScreen({ sessionId }: CrisisScreenProps) {
           <p className="font-mono text-xs uppercase tracking-wider text-crisis">
             живі люди готові слухати
           </p>
-          {hotlines.map((hotline) => {
-            const isChat = hotline.note.includes('чат') || hotline.note.includes('chat');
-            return (
-              <a
-                key={hotline.number}
-                href={`tel:${hotline.number.replace(/\s/g, '')}`}
-                className="flex items-center gap-4 rounded-2xl border border-divider bg-bgSoft px-4 py-4 transition-colors hover:border-crisis/30 hover:bg-crisisSoft/40 active:opacity-80"
-              >
-                <div className={cn('rounded-xl p-2.5', isChat ? 'bg-accent/10' : 'bg-crisisSoft')}>
-                  {isChat ? (
-                    <MessageSquare size={20} strokeWidth={1.5} className="text-accent" />
-                  ) : (
-                    <Phone size={20} strokeWidth={1.5} className="text-crisis" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-sans text-base text-ink">{hotline.name}</p>
-                  <p className="font-mono text-xs text-inkSoft">{hotline.note}</p>
-                </div>
-                <span className="font-mono text-xl font-medium text-crisis whitespace-nowrap">
-                  {hotline.number}
-                </span>
-              </a>
-            );
-          })}
+          {hotlines.map((hotline) => (
+            <HotlineRow key={hotline.number} hotline={hotline} />
+          ))}
         </div>
 
         {/* Вправа заземлення */}

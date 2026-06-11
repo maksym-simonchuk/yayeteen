@@ -6,17 +6,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import type { Specialist } from '@/lib/specialists';
+import { CONTACT_ICON_LABEL } from '@/lib/specialists';
 
 interface SpecialistCardProps {
   specialist: Specialist;
   priority?: boolean; // для above-the-fold (LCP)
 }
-
-const CONTACT_ICON_LABEL: Record<string, { label: string; title: string }> = {
-  telegram: { label: 'TG', title: 'Доступно через Telegram' },
-  email: { label: 'EMAIL', title: 'Доступно через email' },
-  form: { label: 'FORM', title: 'Доступна форма запису' },
-};
 
 export function SpecialistCard({ specialist: s, priority = false }: SpecialistCardProps) {
   return (

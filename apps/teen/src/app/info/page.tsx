@@ -1,5 +1,6 @@
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
+import { getHotlines } from '@ya-ye/method';
 
 const FAQ = [
   {
@@ -33,6 +34,9 @@ const FAQ = [
 ];
 
 export default function InfoPage() {
+  const uaHotlines = getHotlines('UA');
+  const primary = uaHotlines[0];
+
   return (
     <main className="min-h-[100dvh] bg-bg">
       <header className="flex items-center gap-3 border-b border-divider px-4 py-4">
@@ -53,7 +57,7 @@ export default function InfoPage() {
             я є AI · не людина
           </p>
           <p className="mt-2 font-sans text-sm leading-relaxed text-inkSoft">
-            я алгоритм. я не можу замінити живу людину, не маю власних почуттів і не пам’ятаю тебе
+            я алгоритм. я не можу замінити живу людину, не маю власних почуттів і не пам'ятаю тебе
             між сесіями. я тут, щоб тримати простір — не заповнювати порожнечу.
           </p>
         </div>
@@ -78,14 +82,14 @@ export default function InfoPage() {
             якщо зараз дуже важко
           </p>
           <p className="mt-1 font-sans text-sm text-inkSoft">
-            дитяча лінія довіри:{' '}
+            {primary ? primary.name : 'дитяча лінія довіри'}:{' '}
             <a
-              href="tel:116111"
+              href={`tel:${(primary?.number ?? '116111').replace(/\s/g, '')}`}
               className="font-mono text-crisis underline-offset-2 hover:underline"
             >
-              116 111
+              {primary?.number ?? '116 111'}
             </a>{' '}
-            · безкоштовно · цілодобово
+            · {primary?.note ?? 'безкоштовно · цілодобово'}
           </p>
         </div>
       </div>

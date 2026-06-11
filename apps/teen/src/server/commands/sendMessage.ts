@@ -6,6 +6,7 @@
 import { buildSystemPrompt } from '@ya-ye/method/system-prompt';
 import { detectCrisis } from '@ya-ye/method/crisis-detector';
 import { validateAsymmetry } from '@ya-ye/method/principles/asymmetry';
+import { validateResponseStyle } from '@ya-ye/method/principles/responseStyle';
 import { logCrisisEvent } from './logCrisisEvent';
 import type { SessionContext, AgeBand, Jurisdiction } from '@ya-ye/method/system-prompt';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -21,6 +22,8 @@ const CRISIS_MESSAGE = 'стоп. зупинись на секунду.\n\nя х
 // VALID_AGE_BANDS / VALID_JURISDICTIONS — для валідації DB-значень (не client-input).
 const VALID_AGE_BANDS: readonly AgeBand[] = ['13-15', '16-17', '18-25'] as const;
 const VALID_JURISDICTIONS: readonly Jurisdiction[] = ['UA', 'US', 'UK', 'EU'] as const;
+
+const DEFAULT_PROMPT_VERSION = process.env.ANTHROPIC_PROMPT_VERSION ?? 'v1.8';
 
 export type ChatTurn = { role: 'user' | 'assistant'; content: string };
 
@@ -187,7 +190,7 @@ export async function sendMessage(
         session_id: sessionId,
         role: 'user',
         content: userMessage,
-        prompt_version: process.env.ANTHROPIC_PROMPT_VERSION ?? 'v1.8',
+        prompt_version: DEFAULT_PROMPT_VERSION,
       })
       .select('id')
       .single();
@@ -318,11 +321,16 @@ export async function persistAssistantMessage(
     console.warn('[asymmetry-violation]', asymmetryResult.matches, { sessionId });
   }
 
+  const styleResult = validateResponseStyle(fullResponse);
+  if (!styleResult.valid) {
+    console.warn('[style-violation]', styleResult.violations, { sessionId });
+  }
+
   const { error } = await supabase.from('messages').insert({
     session_id: sessionId,
     role: 'assistant',
     content: fullResponse,
-    prompt_version: process.env.ANTHROPIC_PROMPT_VERSION ?? 'v1.8',
+    prompt_version: DEFAULT_PROMPT_VERSION,
   });
 
   if (error) {

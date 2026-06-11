@@ -10,6 +10,7 @@
 
 import { useState, useCallback } from 'react';
 import { ISLAND_LAYERS, type IslandVariant } from './island.types';
+import { layerProps } from '../../lib/island-layer-props';
 
 interface IslandProps {
   variant?: IslandVariant;
@@ -70,6 +71,8 @@ export function Island({
     },
     [interactive],
   );
+
+  const handlers = { onEnter: handleEnter, onLeave: handleLeave, onTap: handleTap };
 
   const activeLayer =
     activeFm !== null ? (ISLAND_LAYERS.find((l) => l.fm === activeFm) ?? null) : null;
@@ -166,14 +169,7 @@ export function Island({
         <g
           className="island-layer island-layer--beach"
           data-fm="1"
-          style={{
-            cursor: interactive ? 'pointer' : undefined,
-            opacity: activeFm && activeFm !== 1 ? 0.55 : 1,
-            transition: 'opacity 200ms ease',
-          }}
-          onMouseEnter={() => handleEnter(1)}
-          onMouseLeave={handleLeave}
-          onClick={() => handleTap(1)}
+          {...layerProps(1, activeFm, interactive, handlers)}
           aria-label={`${ISLAND_LAYERS[0]!.metaphor}: ${ISLAND_LAYERS[0]!.shortText}`}
         >
           <path
@@ -190,14 +186,7 @@ export function Island({
         <g
           className="island-layer island-layer--bay"
           data-fm="2"
-          style={{
-            cursor: interactive ? 'pointer' : undefined,
-            opacity: activeFm && activeFm !== 2 ? 0.55 : 1,
-            transition: 'opacity 200ms ease',
-          }}
-          onMouseEnter={() => handleEnter(2)}
-          onMouseLeave={handleLeave}
-          onClick={() => handleTap(2)}
+          {...layerProps(2, activeFm, interactive, handlers)}
           aria-label={`${ISLAND_LAYERS[1]!.metaphor}: ${ISLAND_LAYERS[1]!.shortText}`}
         >
           <path
@@ -232,14 +221,7 @@ export function Island({
         <g
           className="island-layer island-layer--rock"
           data-fm="3"
-          style={{
-            cursor: interactive ? 'pointer' : undefined,
-            opacity: activeFm && activeFm !== 3 ? 0.55 : 1,
-            transition: 'opacity 200ms ease',
-          }}
-          onMouseEnter={() => handleEnter(3)}
-          onMouseLeave={handleLeave}
-          onClick={() => handleTap(3)}
+          {...layerProps(3, activeFm, interactive, handlers)}
           aria-label={`${ISLAND_LAYERS[2]!.metaphor}: ${ISLAND_LAYERS[2]!.shortText}`}
         >
           <path
@@ -296,14 +278,7 @@ export function Island({
         <g
           className="island-layer island-layer--lighthouse"
           data-fm="4"
-          style={{
-            cursor: interactive ? 'pointer' : undefined,
-            opacity: activeFm && activeFm !== 4 ? 0.55 : 1,
-            transition: 'opacity 200ms ease',
-          }}
-          onMouseEnter={() => handleEnter(4)}
-          onMouseLeave={handleLeave}
-          onClick={() => handleTap(4)}
+          {...layerProps(4, activeFm, interactive, handlers)}
           aria-label={`${ISLAND_LAYERS[3]!.metaphor}: ${ISLAND_LAYERS[3]!.shortText}`}
         >
           <g className="island-layer__beam">

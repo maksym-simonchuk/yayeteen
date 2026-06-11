@@ -1,7 +1,9 @@
-// Канонічні типи Mode/FM/CrisisSeverity і SessionContext живуть у
+// Канонічні типи Mode/FM і SessionContext живуть у
 // ../system-prompt.ts (runtime-версія, яку використовує route.ts).
+// CrisisSeverity — єдине джерело в ../crisis-detector.ts.
 // Тут — лише типи, що не мають канонічного джерела.
-export type { Mode, FM, CrisisSeverity } from '../system-prompt';
+export type { Mode, FM } from '../system-prompt';
+export type { CrisisSeverity } from '../crisis-detector';
 
 import type { Mode, FM } from '../system-prompt';
 
@@ -24,4 +26,5 @@ export interface Hotline {
   name: string;
   number: string;
   note: string;
+  channel: 'phone' | 'chat';
 }

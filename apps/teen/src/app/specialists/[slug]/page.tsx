@@ -5,9 +5,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ChevronLeft, Send, Mail, FileText } from 'lucide-react';
-import { cn } from '@ya-ye/ui';
 import { getSpecialistBySlug } from '@/lib/specialists';
 import { SessionTypeCard } from '@/components/specialists/SessionTypeCard';
+import { FactItem } from '@/components/specialists/FactItem';
+import { ContactMethod } from '@/components/specialists/ContactMethod';
 
 export default async function SpecialistProfilePage({
   params,
@@ -64,10 +65,10 @@ export default async function SpecialistProfilePage({
 
         {/* Quick facts */}
         <section className="mt-10 grid gap-3 rounded-2xl bg-bgSoft p-5 md:grid-cols-2">
-          <Fact label="Спеціалізація" value={s.specializations.join(', ')} />
-          <Fact label="Робота з" value={s.worksWith.join(', ')} />
-          <Fact label="Освіта" value={s.education} />
-          <Fact label="Підвищення кваліфікації" value={s.certifications} />
+          <FactItem label="Спеціалізація" value={s.specializations.join(', ')} />
+          <FactItem label="Робота з" value={s.worksWith.join(', ')} />
+          <FactItem label="Освіта" value={s.education} />
+          <FactItem label="Підвищення кваліфікації" value={s.certifications} />
         </section>
 
         {/* Про мене */}
@@ -164,75 +165,5 @@ export default async function SpecialistProfilePage({
         </section>
       </div>
     </main>
-  );
-}
-
-function Fact({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="font-mono text-[10px] uppercase tracking-wider text-inkSoft">{label}</p>
-      <p className="mt-0.5 font-sans text-sm text-ink">{value}</p>
-    </div>
-  );
-}
-
-interface ContactMethodProps {
-  primary?: boolean;
-  title: string;
-  badge?: string;
-  handle: string;
-  href: string;
-  ctaText: string;
-  disclaimer: string;
-  icon: React.ReactNode;
-  external?: boolean;
-}
-
-function ContactMethod({
-  primary = false,
-  title,
-  badge,
-  handle,
-  href,
-  ctaText,
-  disclaimer,
-  icon,
-  external = false,
-}: ContactMethodProps) {
-  const externalProps = external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
-  return (
-    <article
-      className={cn(
-        'flex flex-col gap-2 rounded-2xl p-5',
-        primary ? 'border-2 border-accent bg-accent/5' : 'border border-divider bg-bgSoft',
-      )}
-    >
-      <header className="flex items-center justify-between">
-        <h3 className="font-sans text-base font-medium text-ink">{title}</h3>
-        {badge && (
-          <span className="rounded-lg bg-accent/15 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-accent">
-            {badge}
-          </span>
-        )}
-      </header>
-
-      <p className="font-mono text-sm text-ink break-all">{handle}</p>
-
-      {disclaimer && (
-        <p className="font-sans text-xs italic leading-relaxed text-inkSoft">{disclaimer}</p>
-      )}
-
-      <a
-        href={href}
-        {...externalProps}
-        className={cn(
-          'mt-auto inline-flex items-center gap-2 rounded-xl px-4 py-2.5 font-sans text-sm transition-opacity active:opacity-80',
-          primary ? 'bg-accent text-white' : 'border border-accent/40 bg-bg text-accent',
-        )}
-      >
-        {icon}
-        {ctaText}
-      </a>
-    </article>
   );
 }

@@ -5,23 +5,12 @@
 // — Право видалити все
 
 import Link from 'next/link';
-import { ChevronLeft } from 'lucide-react';
+import { InnerPageHeader } from '../../components/InnerPageHeader';
 
 export default function PrivacyPage() {
   return (
     <main className="min-h-[100dvh] bg-bg text-ink">
-      <header className="border-b border-divider px-6 py-5">
-        <div className="mx-auto flex max-w-6xl items-center gap-3">
-          <Link
-            href="/"
-            className="rounded-xl p-1.5 text-inkSoft transition-colors hover:bg-bgSoft"
-            aria-label="На головну"
-          >
-            <ChevronLeft size={20} strokeWidth={1.5} />
-          </Link>
-          <h1 className="font-serif text-2xl italic text-ink">Приватність</h1>
-        </div>
-      </header>
+      <InnerPageHeader title="Приватність" />
 
       <div className="mx-auto max-w-2xl px-6 py-12 md:py-16 space-y-8">
         <div className="space-y-5 rounded-3xl border-l-4 border-accent bg-bgSoft px-6 py-8 md:px-8">

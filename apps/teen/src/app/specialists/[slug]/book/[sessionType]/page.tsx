@@ -10,9 +10,8 @@ import { ChevronLeft, Send, Mail } from 'lucide-react';
 import { cn } from '@ya-ye/ui';
 import { getSpecialistBySlug, getSessionType } from '@/lib/specialists';
 import { CalendarMockup } from '@/components/specialists/CalendarMockup';
-
-type AgeBand = '13-15' | '16-17' | '18-25' | '25+';
-type ContactChannel = 'telegram' | 'email';
+import type { BookingAgeBand, ContactChannel } from '@ya-ye/contracts';
+import { EMAIL_RE } from '@/lib/validation';
 
 export default function BookingPage({
   params,
@@ -29,7 +28,7 @@ export default function BookingPage({
   const [name, setName] = useState('');
   const [contactPreferred, setContactPreferred] = useState<ContactChannel>('telegram');
   const [contactValue, setContactValue] = useState('');
-  const [ageBand, setAgeBand] = useState<AgeBand | ''>('');
+  const [ageBand, setAgeBand] = useState<BookingAgeBand | ''>('');
   const [topic, setTopic] = useState('');
   const [aiExcerpt, setAiExcerpt] = useState('');
   const [consentOffer, setConsentOffer] = useState(false);
@@ -48,9 +47,6 @@ export default function BookingPage({
   const isMinor = ageBand === '13-15' || ageBand === '16-17';
   const isDiscovery = session.type === 'discovery';
 
-  // Клієнтська email-валідація: якщо обрано email-канал, перевіряємо формат.
-  // Той самий критерій, що і в BookingSubmitSchema (packages/contracts).
-  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const contactValueValid =
     contactPreferred === 'email'
       ? EMAIL_RE.test(contactValue.trim())
@@ -244,7 +240,7 @@ export default function BookingPage({
             <select
               id="age_band"
               value={ageBand}
-              onChange={(e) => setAgeBand(e.target.value as AgeBand)}
+              onChange={(e) => setAgeBand(e.target.value as BookingAgeBand)}
               required
               className="w-full rounded-2xl border border-divider bg-bgSoft px-4 py-3 font-sans text-base text-ink focus:border-accent/50 focus:outline-none"
             >

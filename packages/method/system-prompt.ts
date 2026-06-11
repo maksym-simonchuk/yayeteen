@@ -190,11 +190,14 @@ VI. ОПОРА У ТІЛІ — «де це у тобі?», «що зараз у 
 «Це присутність — чи симуляція взаємності?»
 Якщо відповідь «симуляція» — переписати.`.trim();
 
+import type { AgeBand } from '@ya-ye/contracts';
+import type { CrisisSeverity } from './crisis-detector';
+
+export type { AgeBand };
+export type { CrisisSeverity };
 export type Mode = 1 | 2 | 3 | 4;
 export type FM = 1 | 2 | 3 | 4;
-export type CrisisSeverity = 'none' | 'elevated' | 'high' | 'imminent';
 export type Jurisdiction = 'UA' | 'US' | 'UK' | 'EU';
-export type AgeBand = '13-15' | '16-17' | '18-25';
 export type Locale = 'uk' | 'en' | 'de';
 
 export interface SessionContext {
@@ -717,12 +720,6 @@ ${specialist}
 }
 
 function buildElevatedCrisisBlock(ctx: SessionContext): string {
-  const lines = HOTLINES[ctx.jurisdiction];
-  // Борг (quality-gate §6): шаблон нижче хардкодить UA-скрипт і НЕ інтерполює
-  // jurisdiction-специфічні лінії. Інтерполяція — рішення Methodology Lead.
-  const _anonymousLines = lines.anonymous.map((h) => `  · ${h}`).join('\n');
-  const _specialistLine = lines.specialist ? `  · ${lines.specialist}` : '';
-
   return `[CRISIS ДІАЛОГ · ELEVATED · АКТИВНО]
 
 Детектор виявив ознаки кризи. Людина може бути в небезпеці.

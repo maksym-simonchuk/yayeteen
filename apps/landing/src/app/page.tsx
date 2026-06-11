@@ -12,12 +12,7 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Island } from '@ya-ye/ui';
 import { GroundingMinute } from './grounding-minute';
-
-// Поки apps/landing не має власних маршрутів `/register`, `/crisis`, тощо —
-// лінки ведуть на teen-app (Phase 2 MVP). У production буде sub-domain routing.
-const APP_BASE =
-  process.env.NEXT_PUBLIC_TEEN_APP_URL?.replace(/^﻿/, '').trim() ||
-  'https://yayeproduct-teen.vercel.app';
+import { APP_BASE } from '../lib/config';
 
 export default function LandingPage() {
   return (

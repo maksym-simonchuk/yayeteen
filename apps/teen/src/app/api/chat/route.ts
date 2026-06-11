@@ -10,14 +10,8 @@ import { sendMessage, persistAssistantMessage } from '@/server/commands/sendMess
 import { createAnthropicAdapter } from '@/server/adapters/anthropicSdk';
 import { SystemClock } from '@/server/adapters/systemClock';
 import { MemoryLimiterAdapter } from '@/server/adapters/memoryLimiter';
+import { jsonError } from '@/lib/api-response';
 import type { ChatTurn } from '@/server/commands/sendMessage';
-
-function jsonError(error: string, status: number): Response {
-  return new Response(JSON.stringify({ error }), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
-}
 
 export async function POST(req: Request) {
   try {

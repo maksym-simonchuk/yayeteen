@@ -32,3 +32,7 @@ export function stripModeLabel(responseText: string): string {
   const trimmed = responseText.trimStart();
   return trimmed.replace(MODE_LABEL_RE, '').trimStart();
 }
+
+// Регекс для парсингу маркера. Підтримує опційний whitespace навколо
+// і повторні маркери (хоч промт забороняє — все одно стрипаємо всі).
+export const MODE_REDIRECT_RE = /\s*\[MODE:4\]\s*/g;
