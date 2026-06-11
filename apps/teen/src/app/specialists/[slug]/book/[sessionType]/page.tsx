@@ -10,6 +10,7 @@ import { ChevronLeft, Send, Mail } from 'lucide-react';
 import { cn } from '@ya-ye/ui';
 import { getSpecialistBySlug, getSessionType } from '@/lib/specialists';
 import { CalendarMockup } from '@/components/specialists/CalendarMockup';
+import { RadioOption, Checkbox } from './_components';
 import type { BookingAgeBand, ContactChannel } from '@ya-ye/contracts';
 import { EMAIL_RE } from '@/lib/validation';
 
@@ -355,65 +356,5 @@ export default function BookingPage({
         </form>
       </div>
     </main>
-  );
-}
-
-function RadioOption({
-  checked,
-  onChange,
-  label,
-  hint,
-  name,
-}: {
-  checked: boolean;
-  onChange: () => void;
-  label: string;
-  hint?: string;
-  name: string;
-}) {
-  return (
-    <label
-      className={cn(
-        'flex cursor-pointer items-start gap-3 rounded-2xl border px-4 py-3 transition-colors',
-        checked ? 'border-accent bg-accent/5' : 'border-divider bg-bgSoft',
-      )}
-    >
-      <input
-        type="radio"
-        name={name}
-        checked={checked}
-        onChange={onChange}
-        className="mt-1 h-4 w-4 accent-accent"
-      />
-      <span className="flex-1">
-        <span className="block font-sans text-sm text-ink">{label}</span>
-        {hint && <span className="block font-sans text-xs text-inkSoft">{hint}</span>}
-      </span>
-    </label>
-  );
-}
-
-function Checkbox({
-  checked,
-  onChange,
-  required,
-  children,
-}: {
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  required?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="flex cursor-pointer items-start gap-3">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        required={required}
-        className="mt-1 h-4 w-4 accent-accent"
-      />
-      <span className="font-sans text-sm leading-relaxed text-ink">{children}</span>
-    </label>
   );
 }
