@@ -12,7 +12,7 @@ import { ExerciseCard } from '@/components/chat/ExerciseCard';
 import { SessionTimer } from '@/components/chat/SessionTimer';
 import { SpecialistRedirectInline } from '@/components/chat/SpecialistRedirectInline';
 import { cn } from '@ya-ye/ui';
-import { SseEventSchema, type ChatRequest } from '@ya-ye/contracts';
+import { SseEventSchema, CrisisEventSchema, type ChatRequest } from '@ya-ye/contracts';
 import {
   parseModeLabel,
   stripModeLabel,
@@ -229,12 +229,13 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
       const contentType = response.headers.get('content-type');
 
       if (contentType?.includes('application/json')) {
-        const data = (await response.json()) as { type: string; message?: string };
-        if (data.type === 'crisis' && data.message) {
+        const crisis = CrisisEventSchema.safeParse(await response.json());
+        if (crisis.success) {
+          const message = crisis.data.message;
           setMessages((prev) =>
             prev.map((m) =>
               m.id === assistantId
-                ? { ...m, bubbles: data.message!.split('\n\n').filter(Boolean), isStreaming: false }
+                ? { ...m, bubbles: message.split('\n\n').filter(Boolean), isStreaming: false }
                 : m,
             ),
           );

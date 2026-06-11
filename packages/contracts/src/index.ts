@@ -93,8 +93,8 @@ export type MessagesResponse = z.infer<typeof MessagesResponseSchema>;
 //   error  → { type: 'error', detail?: string }   (detail лише в dev)
 //
 // Кризовий { type: 'crisis', message: string } повертається як JSON
-// (Content-Type: application/json), а не як SSE — тому він теж включений
-// в union для повноти клієнтського парсингу JSON-відповіді.
+// (Content-Type: application/json), а не як SSE — тому валідується окремою
+// CrisisEventSchema (див. нижче), а НЕ цим union.
 // ---------------------------------------------------------------------------
 
 const SseTokenEventSchema = z.object({
@@ -113,7 +113,8 @@ const SseErrorEventSchema = z.object({
   detail: z.string().optional(),
 });
 
-const SseCrisisEventSchema = z.object({
+// Crisis повертається як application/json (НЕ SSE). Окрема схема — не в SSE-union.
+export const CrisisEventSchema = z.object({
   type: z.literal('crisis'),
   // message — текст, що відображається у UI до відкриття CrisisModal
   message: z.string(),
@@ -162,11 +163,10 @@ export const SseEventSchema = z.discriminatedUnion('type', [
   SseTokenEventSchema,
   SseDoneEventSchema,
   SseErrorEventSchema,
-  SseCrisisEventSchema,
 ]);
 
 export type SseEvent = z.infer<typeof SseEventSchema>;
 export type SseTokenEvent = z.infer<typeof SseTokenEventSchema>;
 export type SseDoneEvent = z.infer<typeof SseDoneEventSchema>;
 export type SseErrorEvent = z.infer<typeof SseErrorEventSchema>;
-export type SseCrisisEvent = z.infer<typeof SseCrisisEventSchema>;
+export type CrisisEvent = z.infer<typeof CrisisEventSchema>;
