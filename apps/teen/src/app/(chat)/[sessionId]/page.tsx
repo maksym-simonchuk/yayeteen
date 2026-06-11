@@ -23,6 +23,7 @@ import {
 import { EXERCISE_PREFIXES } from '@/lib/exercisePrefixes';
 import { getHotlines } from '@ya-ye/method';
 import type { ChatMessage } from '@/model/types';
+import { parseDbMessages } from '@/lib/parseDbMessages';
 
 // ---------------------------------------------------------------------------
 // Main chat screen
@@ -66,15 +67,10 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
   useEffect(() => {
     let cancelled = false;
     fetch(`/api/sessions/${sessionId}/messages`)
-      .then(
-        (r) =>
-          r.json() as Promise<{
-            messages?: Array<{ role: 'user' | 'assistant'; content: string }>;
-          }>,
-      )
-      .then((data) => {
+      .then((r) => r.json())
+      .then((raw) => {
         if (cancelled) return;
-        const dbMessages = data.messages ?? [];
+        const dbMessages = parseDbMessages(raw);
         if (dbMessages.length > 0) {
           // Гонка з першим send: fetch стартує при mount, але може зарезолвитись
           // вже ПІСЛЯ того як юзер відправив повідомлення — тоді перезапис стейту
