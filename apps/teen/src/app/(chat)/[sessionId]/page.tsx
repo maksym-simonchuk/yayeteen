@@ -13,13 +13,8 @@ import { SessionTimer } from '@/components/chat/SessionTimer';
 import { SpecialistRedirectInline } from '@/components/chat/SpecialistRedirectInline';
 import { cn } from '@ya-ye/ui';
 import { CrisisEventSchema, type ChatRequest } from '@ya-ye/contracts';
-import {
-  parseModeLabel,
-  stripModeLabel,
-  DEFAULT_MODE_LABEL,
-  hasModeRedirect,
-  stripModeRedirect,
-} from '@/lib/parseModeLabel';
+import { DEFAULT_MODE_LABEL } from '@/lib/parseModeLabel';
+import { applyStreamChunk } from '@/lib/applyStreamChunk';
 import { EXERCISE_PREFIXES } from '@/lib/exercisePrefixes';
 import { getHotlines } from '@ya-ye/method';
 import type { ChatMessage } from '@/model/types';
@@ -142,22 +137,15 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
       setMessages((prev) =>
         prev.map((m) => {
           if (m.id !== id) return m;
-          // Join existing + new text, then check for [MODE:4] marker.
-          // Strip marker from display, but remember it for rendering the inline.
-          const rawWithMarker = m.bubbles.join('\n\n') + text;
-          const redirect = hasModeRedirect(rawWithMarker);
-          // Витягуємо mode-лейбл з першого рядка відповіді і оновлюємо стрічку.
-          // stripModeLabel прибирає тег з тексту перед розбивкою на баббли.
-          const label = parseModeLabel(rawWithMarker);
-          if (label !== DEFAULT_MODE_LABEL) {
-            setModeLabel(label);
+          const next = applyStreamChunk(m.bubbles, m.hasModeRedirect ?? false, text);
+          if (next.modeLabel !== DEFAULT_MODE_LABEL) {
+            setModeLabel(next.modeLabel);
           }
-          const raw = stripModeRedirect(stripModeLabel(rawWithMarker));
           return {
             ...m,
-            bubbles: raw.split('\n\n').filter(Boolean),
+            bubbles: next.bubbles,
             isStreaming: true,
-            hasModeRedirect: m.hasModeRedirect || redirect,
+            hasModeRedirect: next.hasModeRedirect,
           };
         }),
       );
