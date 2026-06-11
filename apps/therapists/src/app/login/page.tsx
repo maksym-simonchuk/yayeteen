@@ -11,8 +11,14 @@ export default function LoginPage() {
 
         <div className="space-y-3">
           <div className="space-y-1">
-            <label className="font-mono text-xs uppercase tracking-wider text-inkSoft">email</label>
+            <label
+              htmlFor="login-email"
+              className="font-mono text-xs uppercase tracking-wider text-inkSoft"
+            >
+              email
+            </label>
             <input
+              id="login-email"
               type="email"
               disabled
               placeholder="name@clinic.ua"
@@ -20,10 +26,14 @@ export default function LoginPage() {
             />
           </div>
           <div className="space-y-1">
-            <label className="font-mono text-xs uppercase tracking-wider text-inkSoft">
+            <label
+              htmlFor="login-password"
+              className="font-mono text-xs uppercase tracking-wider text-inkSoft"
+            >
               пароль
             </label>
             <input
+              id="login-password"
               type="password"
               disabled
               placeholder="••••••••"
