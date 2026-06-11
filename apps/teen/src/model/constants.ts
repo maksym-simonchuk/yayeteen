@@ -12,3 +12,9 @@ export const CONTACT_ICON_LABEL: Record<string, { label: string; title: string }
   email: { label: 'EMAIL', title: 'Доступно через email' },
   form: { label: 'FORM', title: 'Доступна форма запису' },
 };
+
+/**
+ * Дефолтна юрисдикція для кризових ліній (MVP — UA).
+ * Geo-routing: у Phase 3 jurisdiction береться з user profile.
+ */
+export const DEFAULT_JURISDICTION = 'UA';
