@@ -265,9 +265,6 @@ importers:
       '@ya-ye/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@ya-ye/method':
-        specifier: workspace:*
-        version: link:../method
     devDependencies:
       '@eslint/js':
         specifier: ^9.17.0

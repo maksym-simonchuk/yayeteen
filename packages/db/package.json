@@ -13,8 +13,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.47.0",
-    "@ya-ye/contracts": "workspace:*",
-    "@ya-ye/method": "workspace:*"
+    "@ya-ye/contracts": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

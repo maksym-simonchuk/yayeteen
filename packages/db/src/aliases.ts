@@ -7,8 +7,6 @@
 // ============================================================
 
 export type { AgeBand } from '@ya-ye/contracts';
-export type { Jurisdiction } from '@ya-ye/method';
-export type { CrisisSeverity } from '@ya-ye/method';
 export type SessionEndReason = 'time_up' | 'user_closed' | 'crisis_handoff' | 'therapist_handoff';
 export type ReferralStatus = 'new' | 'accepted' | 'declined' | 'completed' | 'no_show';
 export type ReferralUrgency = 'normal' | 'urgent';

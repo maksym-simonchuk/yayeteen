@@ -10,9 +10,7 @@ export type {
 } from './types';
 export type {
   AgeBand,
-  Jurisdiction,
   SessionEndReason,
-  CrisisSeverity,
   ReferralStatus,
   ReferralUrgency,
   ConsentType,
