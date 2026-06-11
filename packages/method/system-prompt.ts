@@ -195,8 +195,8 @@ import type { CrisisSeverity } from './crisis-detector';
 
 export type { AgeBand };
 export type { CrisisSeverity };
-export type Mode = 1 | 2 | 3 | 4;
-export type FM = 1 | 2 | 3 | 4;
+import type { Mode, FM } from './src/types';
+export type { Mode, FM };
 export type Jurisdiction = 'UA' | 'US' | 'UK' | 'EU';
 export type Locale = 'uk' | 'en' | 'de';
 
