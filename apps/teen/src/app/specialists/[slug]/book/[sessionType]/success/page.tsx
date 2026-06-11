@@ -6,6 +6,7 @@ import { ChevronRight } from 'lucide-react';
 import { Island } from '@ya-ye/ui';
 import { getSpecialistBySlug, getSessionType } from '@/lib/specialists';
 import { notFound } from 'next/navigation';
+import { NextStep } from './NextStep';
 
 interface PageProps {
   params: Promise<{ slug: string; sessionType: string }>;
@@ -107,16 +108,5 @@ export default async function BookingSuccessPage({ params, searchParams }: PageP
         </div>
       </div>
     </main>
-  );
-}
-
-function NextStep({ n, text }: { n: string; text: React.ReactNode }) {
-  return (
-    <li className="flex gap-3 rounded-2xl border border-divider bg-bgSoft p-4">
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-accent/15 font-mono text-xs text-accent">
-        {n}
-      </span>
-      <p className="flex-1 font-sans text-sm leading-relaxed text-ink">{text}</p>
-    </li>
   );
 }
