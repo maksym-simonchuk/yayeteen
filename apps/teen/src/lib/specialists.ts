@@ -122,9 +122,3 @@ export function getSpecialistBySlug(slug: string): Specialist | undefined {
 export function getSessionType(specialist: Specialist, type: string): SessionOffering | undefined {
   return specialist.sessionTypes.find((s) => s.type === type);
 }
-
-export const CONTACT_ICON_LABEL: Record<string, { label: string; title: string }> = {
-  telegram: { label: 'TG', title: 'Доступно через Telegram' },
-  email: { label: 'EMAIL', title: 'Доступно через email' },
-  form: { label: 'FORM', title: 'Доступна форма запису' },
-};
