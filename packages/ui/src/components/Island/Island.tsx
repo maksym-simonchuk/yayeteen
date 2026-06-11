@@ -64,7 +64,7 @@ export function Island({
         xmlns="http://www.w3.org/2000/svg"
         style={{ display: 'block' }}
         className={`island-svg ${className}`}
-        role="img"
+        role={interactive ? 'group' : 'img'}
         aria-label={ariaLabel}
       >
         <defs>
