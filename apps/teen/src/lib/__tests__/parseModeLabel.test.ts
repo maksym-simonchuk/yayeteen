@@ -2,7 +2,7 @@
 // S3: «mode-лейбл з відповіді» — парсер витягує лейбл з тексту AI.
 
 import { describe, it, expect } from 'vitest';
-import { parseModeLabel, stripModeLabel, DEFAULT_MODE_LABEL } from '../parseModeLabel';
+import { parseModeLabel, stripModeLabel, DEFAULT_MODE_LABEL, hasModeRedirect, stripModeRedirect } from '../parseModeLabel';
 
 describe('parseModeLabel', () => {
   it('витягує [01 · ПІДТРИМУЮ] з початку відповіді', () => {
@@ -70,5 +70,35 @@ describe('stripModeLabel', () => {
   it('не видаляє тег не з початку', () => {
     const text = 'текст [01 · ПІДТРИМУЮ] ще';
     expect(stripModeLabel(text)).toBe('текст [01 · ПІДТРИМУЮ] ще');
+  });
+});
+
+describe('hasModeRedirect', () => {
+  it('detects the [MODE:4] marker', () => {
+    expect(hasModeRedirect('текст [MODE:4] далі')).toBe(true);
+    expect(hasModeRedirect('без маркера')).toBe(false);
+  });
+
+  it('is stateless — repeated calls return the same result (no lastIndex drift)', () => {
+    const s = 'хочеш до фахівця? [MODE:4]';
+    expect(hasModeRedirect(s)).toBe(true);
+    expect(hasModeRedirect(s)).toBe(true);
+    expect(hasModeRedirect(s)).toBe(true);
+  });
+});
+
+describe('stripModeRedirect', () => {
+  it('removes the marker and surrounding whitespace', () => {
+    expect(stripModeRedirect('так  [MODE:4]  ось')).toBe('такось');
+  });
+
+  it('removes ALL markers if model emits more than one', () => {
+    expect(stripModeRedirect('a [MODE:4] b [MODE:4] c')).toBe('abc');
+  });
+
+  it('is stateless across repeated calls', () => {
+    const s = 'x [MODE:4] y';
+    expect(stripModeRedirect(s)).toBe('xy');
+    expect(stripModeRedirect(s)).toBe('xy');
   });
 });

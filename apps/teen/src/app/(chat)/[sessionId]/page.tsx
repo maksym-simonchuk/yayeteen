@@ -17,7 +17,8 @@ import {
   parseModeLabel,
   stripModeLabel,
   DEFAULT_MODE_LABEL,
-  MODE_REDIRECT_RE,
+  hasModeRedirect,
+  stripModeRedirect,
 } from '@/lib/parseModeLabel';
 import { EXERCISE_PREFIXES } from '@/lib/exercisePrefixes';
 import { getHotlines } from '@ya-ye/method';
@@ -148,22 +149,19 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
           // Join existing + new text, then check for [MODE:4] marker.
           // Strip marker from display, but remember it for rendering the inline.
           const rawWithMarker = m.bubbles.join('\n\n') + text;
-          const hasModeRedirect = MODE_REDIRECT_RE.test(rawWithMarker);
-          // Reset regex state (g-flag is stateful) before next test elsewhere
-          MODE_REDIRECT_RE.lastIndex = 0;
+          const redirect = hasModeRedirect(rawWithMarker);
           // Витягуємо mode-лейбл з першого рядка відповіді і оновлюємо стрічку.
           // stripModeLabel прибирає тег з тексту перед розбивкою на баббли.
           const label = parseModeLabel(rawWithMarker);
           if (label !== DEFAULT_MODE_LABEL) {
             setModeLabel(label);
           }
-          const raw = stripModeLabel(rawWithMarker).replace(MODE_REDIRECT_RE, '');
-          MODE_REDIRECT_RE.lastIndex = 0;
+          const raw = stripModeRedirect(stripModeLabel(rawWithMarker));
           return {
             ...m,
             bubbles: raw.split('\n\n').filter(Boolean),
             isStreaming: true,
-            hasModeRedirect: m.hasModeRedirect || hasModeRedirect,
+            hasModeRedirect: m.hasModeRedirect || redirect,
           };
         }),
       );
@@ -295,6 +293,8 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
           } else if (data.type === 'done') {
             finalizeStream(assistantId);
           } else if (data.type === 'error') {
+            // detail приходить лише в dev (S5) — без нього помилка німа в DevTools
+            console.error('[chat-sse-error]', data.detail ?? '(no detail — production)');
             setMessages((prev) =>
               prev.map((m) =>
                 m.id === assistantId ? { ...m, bubbles: [ERROR_BUBBLE], isStreaming: false } : m,
