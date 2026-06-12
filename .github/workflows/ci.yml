@@ -6,6 +6,9 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+  # Ручний запуск з Actions-табу + форсить реєстрацію workflow у GitHub
+  # (Actions увімкнено після ранніх пушів — потрібен новий workflow-коміт для індексації).
+  workflow_dispatch:
 
 env:
   PNPM_VERSION: '9.14.4'
