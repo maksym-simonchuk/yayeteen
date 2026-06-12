@@ -12,16 +12,15 @@ import { ExerciseCard } from '@/components/chat/ExerciseCard';
 import { SessionTimer } from '@/components/chat/SessionTimer';
 import { SpecialistRedirectInline } from '@/components/chat/SpecialistRedirectInline';
 import { cn } from '@ya-ye/ui';
-import { SseEventSchema, type ChatRequest } from '@ya-ye/contracts';
-import {
-  parseModeLabel,
-  stripModeLabel,
-  DEFAULT_MODE_LABEL,
-  MODE_REDIRECT_RE,
-} from '@/lib/parseModeLabel';
+import { CrisisEventSchema, type ChatRequest } from '@ya-ye/contracts';
+import { DEFAULT_MODE_LABEL } from '@/lib/parseModeLabel';
+import { applyStreamChunk } from '@/lib/applyStreamChunk';
 import { EXERCISE_PREFIXES } from '@/lib/exercisePrefixes';
 import { getHotlines } from '@ya-ye/method';
 import type { ChatMessage } from '@/model/types';
+import { parseDbMessages } from '@/lib/parseDbMessages';
+import { greetingFor } from '@/lib/greeting';
+import { parseSseStream } from '@/lib/chatStream';
 
 // ---------------------------------------------------------------------------
 // Main chat screen
@@ -65,15 +64,10 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
   useEffect(() => {
     let cancelled = false;
     fetch(`/api/sessions/${sessionId}/messages`)
-      .then(
-        (r) =>
-          r.json() as Promise<{
-            messages?: Array<{ role: 'user' | 'assistant'; content: string }>;
-          }>,
-      )
-      .then((data) => {
+      .then((r) => r.json())
+      .then((raw) => {
         if (cancelled) return;
-        const dbMessages = data.messages ?? [];
+        const dbMessages = parseDbMessages(raw);
         if (dbMessages.length > 0) {
           // Гонка з першим send: fetch стартує при mount, але може зарезолвитись
           // вже ПІСЛЯ того як юзер відправив повідомлення — тоді перезапис стейту
@@ -112,17 +106,15 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
   // EU AI Act Art. 50 disclosure вже є на splash-екрані та у header чату постійно.
   useEffect(() => {
     if (hydrated && messages.length === 0) {
-      const name = sessionStorage.getItem('user_name');
-      const greeting = name ? `розкажи, як ти зараз, ${name}?` : 'розкажи, як ти зараз?';
       setMessages([
         {
           id: 'greeting',
           role: 'assistant',
-          bubbles: [greeting],
+          bubbles: [greetingFor(userName)],
         },
       ]);
     }
-  }, [hydrated, messages.length]);
+  }, [hydrated, messages.length, userName]);
 
   const handleExpire = useCallback(() => {
     setExpired(true);
@@ -145,25 +137,15 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
       setMessages((prev) =>
         prev.map((m) => {
           if (m.id !== id) return m;
-          // Join existing + new text, then check for [MODE:4] marker.
-          // Strip marker from display, but remember it for rendering the inline.
-          const rawWithMarker = m.bubbles.join('\n\n') + text;
-          const hasModeRedirect = MODE_REDIRECT_RE.test(rawWithMarker);
-          // Reset regex state (g-flag is stateful) before next test elsewhere
-          MODE_REDIRECT_RE.lastIndex = 0;
-          // Витягуємо mode-лейбл з першого рядка відповіді і оновлюємо стрічку.
-          // stripModeLabel прибирає тег з тексту перед розбивкою на баббли.
-          const label = parseModeLabel(rawWithMarker);
-          if (label !== DEFAULT_MODE_LABEL) {
-            setModeLabel(label);
+          const next = applyStreamChunk(m.bubbles, m.hasModeRedirect ?? false, text);
+          if (next.modeLabel !== DEFAULT_MODE_LABEL) {
+            setModeLabel(next.modeLabel);
           }
-          const raw = stripModeLabel(rawWithMarker).replace(MODE_REDIRECT_RE, '');
-          MODE_REDIRECT_RE.lastIndex = 0;
           return {
             ...m,
-            bubbles: raw.split('\n\n').filter(Boolean),
+            bubbles: next.bubbles,
             isStreaming: true,
-            hasModeRedirect: m.hasModeRedirect || hasModeRedirect,
+            hasModeRedirect: next.hasModeRedirect,
           };
         }),
       );
@@ -231,12 +213,13 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
       const contentType = response.headers.get('content-type');
 
       if (contentType?.includes('application/json')) {
-        const data = (await response.json()) as { type: string; message?: string };
-        if (data.type === 'crisis' && data.message) {
+        const crisis = CrisisEventSchema.safeParse(await response.json());
+        if (crisis.success) {
+          const message = crisis.data.message;
           setMessages((prev) =>
             prev.map((m) =>
               m.id === assistantId
-                ? { ...m, bubbles: data.message!.split('\n\n').filter(Boolean), isStreaming: false }
+                ? { ...m, bubbles: message.split('\n\n').filter(Boolean), isStreaming: false }
                 : m,
             ),
           );
@@ -262,46 +245,22 @@ export default function ChatPage({ params }: { params: Promise<{ sessionId: stri
         return;
       }
 
-      // SSE streaming
+      // SSE streaming — транспорт винесено у lib/chatStream.ts
       const reader = response.body!.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const events = buffer.split('\n\n');
-        buffer = events.pop() ?? '';
-        for (const event of events) {
-          if (!event.startsWith('data: ')) continue;
-          // SseEventSchema.safeParse замість голого JSON.parse:
-          // обрив стріму або невалідний chunk → пропускаємо без краша UI
-          // (quality-gate §2.4, S3: «обрив стріму → UI не зависає»).
-          let parsed;
-          try {
-            parsed = SseEventSchema.safeParse(JSON.parse(event.slice(6)));
-          } catch {
-            // Невалідний JSON — пропускаємо chunk
-            continue;
-          }
-          if (!parsed.success) {
-            // Невідомий або некоректний SSE-event — пропускаємо без краша
-            continue;
-          }
-          const data = parsed.data;
-          if (data.type === 'token') {
-            appendToStream(assistantId, data.text);
-          } else if (data.type === 'done') {
-            finalizeStream(assistantId);
-          } else if (data.type === 'error') {
-            setMessages((prev) =>
-              prev.map((m) =>
-                m.id === assistantId ? { ...m, bubbles: [ERROR_BUBBLE], isStreaming: false } : m,
-              ),
-            );
-          }
-          // type === 'crisis' обробляється через JSON Content-Type вище, не SSE
+      for await (const data of parseSseStream(reader)) {
+        if (data.type === 'token') {
+          appendToStream(assistantId, data.text);
+        } else if (data.type === 'done') {
+          finalizeStream(assistantId);
+          break;
+        } else if (data.type === 'error') {
+          // detail приходить лише в dev (S5) — без нього помилка німа в DevTools
+          console.error('[chat-sse-error]', data.detail ?? '(no detail — production)');
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantId ? { ...m, bubbles: [ERROR_BUBBLE], isStreaming: false } : m,
+            ),
+          );
         }
       }
       // Stream ended — ensure the bubble is finalized even if 'done' event was missed

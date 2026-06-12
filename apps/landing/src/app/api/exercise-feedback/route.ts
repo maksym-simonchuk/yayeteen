@@ -1,12 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
+import { parseExerciseResult } from '@/lib/exerciseResult';
 
 export async function POST(req: Request) {
-  let result: string;
+  let result: 'helped' | 'neutral' | null = null;
   try {
-    const body = (await req.json()) as { result?: unknown };
-    result = body.result as string;
-    if (result !== 'helped' && result !== 'neutral') throw new Error('invalid result');
+    result = parseExerciseResult(await req.json());
   } catch {
+    result = null;
+  }
+  if (!result) {
     return new Response(JSON.stringify({ error: 'bad request' }), { status: 400 });
   }
 

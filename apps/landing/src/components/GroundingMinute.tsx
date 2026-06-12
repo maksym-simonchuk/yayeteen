@@ -10,8 +10,13 @@ const STEPS = [
   { count: 1, sense: 'спробуй', prompt: 'смак, який відчуваєш' },
 ] as const;
 
+// Стани машини кроків, деривовані від кількості кроків (не magic-числа):
+// 0 = не почато · 1..STEPS.length = кроки · FEEDBACK_STEP = фідбек · DONE_STEP = завершено
+const FEEDBACK_STEP = STEPS.length + 1;
+const DONE_STEP = STEPS.length + 2;
+
 export function GroundingMinute() {
-  const [step, setStep] = useState<number>(0); // 0 = not started, 1–5 = steps, 6 = feedback, 7 = done
+  const [step, setStep] = useState<number>(0);
   const [feedback, setFeedback] = useState<'helped' | 'neutral' | null>(null);
 
   function start() {
@@ -19,12 +24,12 @@ export function GroundingMinute() {
   }
 
   function next() {
-    setStep((s) => (s < STEPS.length ? s + 1 : STEPS.length + 1));
+    setStep((s) => (s < STEPS.length ? s + 1 : FEEDBACK_STEP));
   }
 
   async function handleFeedback(value: 'helped' | 'neutral') {
     setFeedback(value);
-    setStep(7);
+    setStep(DONE_STEP);
     await fetch('/api/exercise-feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -36,8 +41,8 @@ export function GroundingMinute() {
 
   const currentStep = step >= 1 && step <= STEPS.length ? STEPS[step - 1] : null;
   const isActive = step >= 1 && step <= STEPS.length;
-  const showFeedback = step === STEPS.length + 1;
-  const isDone = step === 7;
+  const showFeedback = step === FEEDBACK_STEP;
+  const isDone = step === DONE_STEP;
 
   return (
     <div className="rounded-2xl border border-divider bg-bgSoft px-4 py-4">

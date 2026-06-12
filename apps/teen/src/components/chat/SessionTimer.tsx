@@ -19,14 +19,6 @@ export function SessionTimer({ sessionId, onExpire }: SessionTimerProps) {
   const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    return () => {
-      if (exitTimerRef.current !== null) {
-        clearTimeout(exitTimerRef.current);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
     const interval = setInterval(() => {
       setRemaining((prev) => {
         if (prev <= 1) {
@@ -45,7 +37,14 @@ export function SessionTimer({ sessionId, onExpire }: SessionTimerProps) {
         return prev - 1;
       });
     }, 1000);
-    return () => clearInterval(interval);
+    // Cleanup живе у ТОМУ САМОМУ ефекті, що створює таймери: на кожен re-run
+    // (зміна deps) і на unmount чистимо і interval, і pending redirect-timeout.
+    return () => {
+      clearInterval(interval);
+      if (exitTimerRef.current !== null) {
+        clearTimeout(exitTimerRef.current);
+      }
+    };
   }, [onExpire, router, sessionId]);
 
   const mm = String(Math.floor(remaining / 60)).padStart(2, '0');

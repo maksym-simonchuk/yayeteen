@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { SPECIALISTS } from '@/lib/specialists';
 import { SpecialistCard } from '@/components/specialists/SpecialistCard';
 import { SpecialistPlaceholder } from '@/components/specialists/SpecialistPlaceholder';
+import { HowItWorksStep } from './HowItWorksStep';
 
 export default function SpecialistsPage() {
   return (
@@ -28,13 +29,13 @@ export default function SpecialistsPage() {
         <div className="mx-auto max-w-5xl">
           <h2 className="font-mono text-xs uppercase tracking-wider text-inkSoft">як це працює</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
-            <Step n="1" title="Обери фахівця" text="Подивись профілі, обери, з ким резонує." />
-            <Step
+            <HowItWorksStep n="1" title="Обери фахівця" text="Подивись профілі, обери, з ким резонує." />
+            <HowItWorksStep
               n="2"
               title="Запиши на 15-20 хв"
               text="Discovery-call: знайомство і перевірка, чи комфортно з людиною."
             />
-            <Step
+            <HowItWorksStep
               n="3"
               title="Вирішуй, що далі"
               text="Жодних зобов'язань. Подобається — продовжуй. Ні — пробуй з іншим."
@@ -91,15 +92,5 @@ export default function SpecialistsPage() {
         </div>
       </section>
     </main>
-  );
-}
-
-function Step({ n, title, text }: { n: string; title: string; text: string }) {
-  return (
-    <div className="rounded-2xl border border-divider bg-bgSoft p-5">
-      <p className="font-mono text-xs uppercase tracking-wider text-inkSoft">{n}</p>
-      <h3 className="mt-2 font-sans text-base text-ink">{title}</h3>
-      <p className="mt-1 font-sans text-sm leading-relaxed text-inkSoft">{text}</p>
-    </div>
   );
 }

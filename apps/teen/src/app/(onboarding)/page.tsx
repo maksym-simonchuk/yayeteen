@@ -7,6 +7,7 @@ import { ChevronRight } from 'lucide-react';
 import { cn } from '@ya-ye/ui';
 import type { AgeBand } from '@ya-ye/contracts';
 import { AGE_BANDS } from '@/model/constants';
+import { createSession } from '@/lib/sessions';
 
 type Step = 'splash' | 'age' | 'name';
 
@@ -48,14 +49,8 @@ export default function OnboardingPage() {
     // Сесія працює лише з httpOnly-cookie від POST /api/sessions (P0-5):
     // локальний UUID без cookie гарантує 401 на /api/chat, тому фолбеку немає.
     try {
-      const r = await fetch('/api/sessions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ age_band: selected, user_name: userName }),
-      });
-      const data = (await r.json()) as { sessionId?: string };
-      if (!r.ok || !data.sessionId) throw new Error(`sessions failed: ${r.status}`);
-      router.push(`/${data.sessionId}`);
+      const { sessionId } = await createSession({ age_band: selected!, user_name: userName });
+      router.push(`/${sessionId}`);
     } catch (err) {
       console.error('[onboarding] /api/sessions failed', err);
       setStartError(true);
@@ -80,7 +75,7 @@ export default function OnboardingPage() {
           <div className="space-y-2">
             <h2 className="font-serif text-3xl italic text-ink">як до тебе звертатись?</h2>
             <p className="font-sans text-sm leading-relaxed text-inkSoft">
-              ім'я, нікнейм, псевдонім — або нічого.
+              ім&apos;я, нікнейм, псевдонім — або нічого.
               <br />
               ти вирішуєш.
             </p>
@@ -118,7 +113,7 @@ export default function OnboardingPage() {
               'flex w-full items-center justify-center gap-2 rounded-2xl py-4',
               'font-sans text-base font-medium transition-all',
               nameInput.trim() && !submitting
-                ? 'bg-accent text-white active:opacity-80'
+                ? 'bg-accent text-ink active:opacity-80'
                 : 'bg-divider text-inkSoft',
             )}
           >
@@ -219,7 +214,7 @@ export default function OnboardingPage() {
           disabled={!selected}
           className={cn(
             'flex w-full items-center justify-center gap-2 rounded-2xl py-4 font-sans text-base font-medium transition-all',
-            selected ? 'bg-accent text-white active:opacity-80' : 'bg-divider text-inkSoft',
+            selected ? 'bg-accent text-ink active:opacity-80' : 'bg-divider text-inkSoft',
           )}
         >
           далі

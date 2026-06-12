@@ -378,17 +378,13 @@ describe('SseEventSchema', () => {
     expect(result.success).toBe(true);
   });
 
-  // crisis event (JSON-відповідь, не SSE, але включена для повноти)
-  it('valid — crisis event', () => {
+  // crisis НЕ є SSE-подією: повертається як JSON і валідується CrisisEventSchema
+  // (див. src/__tests__/sse-event.test.ts). SSE-union її відхиляє.
+  it('invalid — crisis відхиляється SSE-union (це JSON, не SSE)', () => {
     const result = SseEventSchema.safeParse({
       type: 'crisis',
       message: 'стоп. зупинись на секунду.',
     });
-    expect(result.success).toBe(true);
-  });
-
-  it('invalid — crisis event без message', () => {
-    const result = SseEventSchema.safeParse({ type: 'crisis' });
     expect(result.success).toBe(false);
   });
 

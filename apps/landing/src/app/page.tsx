@@ -11,7 +11,7 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Island } from '@ya-ye/ui';
-import { GroundingMinute } from './grounding-minute';
+import { GroundingMinute } from '@/components/GroundingMinute';
 import { APP_BASE } from '../lib/config';
 
 export default function LandingPage() {

@@ -34,11 +34,14 @@ export function CrisisModal({ hotlines, onClose, onGrounding }: CrisisModalProps
       role="dialog"
       aria-modal="true"
       aria-label="Кризова підтримка"
+      aria-describedby="crisis-modal-desc"
     >
       <div ref={dialogRef} className="rounded-t-3xl bg-bg shadow-sm">
         {/* Three-move: присутність + пауза + пояснення */}
         <div className="border-b border-divider px-5 pt-5 pb-4">
-          <p className="font-sans text-base leading-relaxed text-ink">я чую тебе.</p>
+          <p id="crisis-modal-desc" className="font-sans text-base leading-relaxed text-ink">
+            я чую тебе.
+          </p>
           <p className="mt-1 font-sans text-sm text-inkSoft">зачекай — зроби паузу.</p>
           <p className="mt-3 font-sans text-sm leading-relaxed text-inkSoft">
             тобі не потрібно нічого пояснювати — достатньо сказати{' '}

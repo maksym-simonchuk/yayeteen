@@ -25,7 +25,7 @@
 | Стилі      | Tailwind CSS + shadcn/ui                           |
 | База даних | Supabase Postgres (eu-central-1, Frankfurt)        |
 | Auth       | Supabase Auth (magic link, OTP)                    |
-| AI         | Anthropic API, модель `claude-opus-4-7` (MVP-демо) |
+| AI         | Anthropic API, модель `claude-haiku-4-5` (MVP-демо) |
 | Realtime   | Supabase Realtime                                  |
 | PWA        | @ducanh2912/next-pwa                               |
 | Аналітика  | PostHog EU self-hosted або Plausible               |
@@ -34,7 +34,7 @@
 
 **Env-змінні:**
 
-- `ANTHROPIC_MODEL=claude-opus-4-7`
+- `ANTHROPIC_MODEL=claude-haiku-4-5`
 - `ANTHROPIC_PROMPT_VERSION=v1.8`
 
 **Монорепо:** turborepo + pnpm workspaces
@@ -111,7 +111,7 @@ divider: '#D9D0BD';
 
 ## 5 · Конфігурація проєкту
 
-- **AI модель:** `claude-opus-4-7` (MVP-демо; production: `claude-sonnet-4-6` + prompt caching)
+- **AI модель:** `claude-haiku-4-5` (MVP-демо, найдешевша — $1/$5 за MTok; production: + prompt caching)
 - **Hosting:** Vercel, Frankfurt region
 - **Crisis reviewer для MVP:** `reviewer@ya-ye.app` (placeholder, замінити перед launch)
 

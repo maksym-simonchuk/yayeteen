@@ -97,8 +97,13 @@ export default async function ReferralPage({ params }: { params: Promise<{ id: s
           </div>
         )}
 
-        {/* CTA */}
-        <button className="w-full rounded-2xl bg-accent py-4 font-sans text-base text-white transition-opacity hover:opacity-90">
+        {/* CTA — accept-дія ще не реалізована (MVP-placeholder, борг Phase F). */}
+        <button
+          type="button"
+          disabled
+          aria-disabled="true"
+          className="w-full rounded-2xl bg-accent py-4 font-sans text-base text-ink opacity-50 transition-opacity"
+        >
           прийняти реферал
         </button>
       </div>

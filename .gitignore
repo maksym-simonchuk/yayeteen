@@ -25,6 +25,7 @@ apps/*/public/workbox-*.js
 
 # Supabase
 supabase/.temp/
+supabase/.branches/
 
 # Testing
 coverage/
@@ -43,3 +44,6 @@ Thumbs.db
 
 # Vercel
 .vercel/
+
+# oh-my-claudecode — локальні службові файли агента (не для репо)
+.omc/

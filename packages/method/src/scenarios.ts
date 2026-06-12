@@ -2,15 +2,8 @@
 // Wellness-мова обов'язково (не clinical).
 // openingPrompt — українською. systemContext — англійською (внутрішній).
 
-export interface Scenario {
-  id: string;
-  title: string; // внутрішня назва (не показується користувачу)
-  fm: 1 | 2 | 3 | 4; // Фундаментальна Мотивація
-  mode: 1 | 2 | 3 | 4; // режим розмови
-  triggerKeywords: string[]; // ключові слова для matchScenario
-  openingPrompt: string; // перше повідомлення AI (українською)
-  systemContext: string; // додатковий контекст для системного промту (англійська)
-}
+import type { Scenario } from './types';
+export type { Scenario };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ФМ1 · «Я можу бути» — захист, простір, опора, довіра

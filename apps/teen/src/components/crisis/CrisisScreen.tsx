@@ -6,10 +6,7 @@ import Link from 'next/link';
 import { getHotlines } from '@ya-ye/method';
 import { Grounding54321 } from '@/components/crisis/Grounding54321';
 import { HotlineRow } from '@/components/crisis/HotlineRow';
-
-// Geo-routing: у Phase 3 jurisdiction береться з user profile
-// Поки що UA за замовчуванням
-const DEFAULT_JURISDICTION = 'UA';
+import { DEFAULT_JURISDICTION } from '@/model/constants';
 
 interface CrisisScreenProps {
   // sessionId передається query-параметром з чату (SOS-посилання або layout).

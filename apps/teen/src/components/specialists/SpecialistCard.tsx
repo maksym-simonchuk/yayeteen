@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import type { Specialist } from '@/lib/specialists';
-import { CONTACT_ICON_LABEL } from '@/lib/specialists';
+import { CONTACT_ICON_LABEL } from '@/model/constants';
 
 interface SpecialistCardProps {
   specialist: Specialist;

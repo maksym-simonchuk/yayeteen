@@ -8,6 +8,7 @@ import { detectCrisis } from '@ya-ye/method/crisis-detector';
 import { validateAsymmetry } from '@ya-ye/method/principles/asymmetry';
 import { validateResponseStyle } from '@ya-ye/method/principles/responseStyle';
 import { logCrisisEvent } from './logCrisisEvent';
+import { stripBom } from '@/lib/env';
 import type { SessionContext, AgeBand, Jurisdiction } from '@ya-ye/method/system-prompt';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { AnthropicPort } from '@/server/ports/anthropic';
@@ -300,7 +301,7 @@ export async function sendMessage(
   // 10. Стрім токенів. Route handler накопичує fullResponse і
   // викликає persistAssistantMessage після закриття стріму.
   const tokenStream = anthropic.streamChat({
-    model: (process.env.ANTHROPIC_MODEL ?? 'claude-opus-4-7').replace(/^﻿/, '').trim(),
+    model: stripBom(process.env.ANTHROPIC_MODEL ?? 'claude-haiku-4-5'),
     maxTokens: 512,
     system: systemPrompt.system,
     messages,

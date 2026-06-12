@@ -1,11 +1,19 @@
-// Канонічні типи Mode/FM і SessionContext живуть у
-// ../system-prompt.ts (runtime-версія, яку використовує route.ts).
+// Канонічний дім доменних типів методології: Mode, FM, Scenario.
+// system-prompt.ts і scenarios.ts реекспортять їх звідси (shim сумісності).
 // CrisisSeverity — єдине джерело в ../crisis-detector.ts.
-// Тут — лише типи, що не мають канонічного джерела.
-export type { Mode, FM } from '../system-prompt';
+export type Mode = 1 | 2 | 3 | 4;
+export type FM = 1 | 2 | 3 | 4;
 export type { CrisisSeverity } from '../crisis-detector';
 
-import type { Mode, FM } from '../system-prompt';
+export interface Scenario {
+  id: string;
+  title: string; // внутрішня назва (не показується користувачу)
+  fm: 1 | 2 | 3 | 4; // Фундаментальна Мотивація
+  mode: 1 | 2 | 3 | 4; // режим розмови
+  triggerKeywords: string[]; // ключові слова для matchScenario
+  openingPrompt: string; // перше повідомлення AI (українською)
+  systemContext: string; // додатковий контекст для системного промту (англійська)
+}
 
 export interface Message {
   role: 'user' | 'assistant';

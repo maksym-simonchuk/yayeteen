@@ -33,6 +33,19 @@ export function stripModeLabel(responseText: string): string {
   return trimmed.replace(MODE_LABEL_RE, '').trimStart();
 }
 
-// Регекс для парсингу маркера. Підтримує опційний whitespace навколо
-// і повторні маркери (хоч промт забороняє — все одно стрипаємо всі).
-export const MODE_REDIRECT_RE = /\s*\[MODE:4\]\s*/g;
+/**
+ * Чи містить текст маркер [MODE:4]. Stateless — свіжий літерал на кожен виклик,
+ * без shared `lastIndex` (на відміну від попереднього `g`-regex export).
+ */
+export function hasModeRedirect(text: string): boolean {
+  return /\[MODE:4\]/.test(text);
+}
+
+/**
+ * Видаляє ВСІ маркери [MODE:4] разом з навколишнім whitespace.
+ * `g`-літерал створюється локально → `String.replace` сам скидає lastIndex,
+ * shared-state hazard відсутній.
+ */
+export function stripModeRedirect(text: string): string {
+  return text.replace(/\s*\[MODE:4\]\s*/g, '');
+}
